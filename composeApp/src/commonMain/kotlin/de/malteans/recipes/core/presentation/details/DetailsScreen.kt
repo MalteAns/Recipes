@@ -84,8 +84,10 @@ import recipes.composeapp.generated.resources.ingredients
 import recipes.composeapp.generated.resources.min
 import recipes.composeapp.generated.resources.online
 import recipes.composeapp.generated.resources.preparation
+import recipes.composeapp.generated.resources.rating
 import recipes.composeapp.generated.resources.servings
 import recipes.composeapp.generated.resources.step
+import kotlin.math.roundToInt
 
 @Composable
 fun DetailsScreenRoot(
@@ -248,6 +250,39 @@ fun DetailsScreen(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth()
+            )
+        }
+    }
+
+    // Dialog for rating
+    var showRatingDialog by remember { mutableStateOf(false) }
+    if (showRatingDialog && state.recipe != null) {
+        var rating by remember { mutableStateOf<Int?>(state.recipe.rating) }
+
+        CustomDialog(
+            onDismissRequest = { showRatingDialog = false },
+            titleText = stringResource(Res.string.rating),
+            rightIcon = {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Submit",
+                    tint = if (rating != state.recipe.rating) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    modifier = Modifier
+                        .clickable {
+                            if (rating != state.recipe.rating) {
+                                onAction(DetailsAction.OnRatingChanged(rating))
+                                showRatingDialog = false
+                            }
+                        }
+                )
+            }
+        ) {
+            RatingBar(
+                value = rating,
+                onChange = { newRating ->
+                    rating = newRating
+                }
             )
         }
     }
@@ -431,15 +466,29 @@ fun DetailsScreen(
                                 .weight(1f)
                         ) {
                             Row {
-                                RatingBar(recipe)
-                                Text(
-                                    text = if (recipe.rating == null && recipe.onlineRating != null)
-                                        "(${stringResource(Res.string.online)})"
-                                    else
-                                        "",
-                                    style = MaterialTheme.typography.bodyMedium
+                                RatingBar(
+                                    value = recipe.rating ?: recipe.onlineRating?.times(5)?.roundToInt(),
+                                    online = recipe.rating == null,
+                                    modifier = Modifier
+                                        .then(
+                                            if (recipe.rating != null) Modifier
+                                            else Modifier.background(
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                        )
+                                        .clickable {
+                                            showRatingDialog = true
+                                        }
                                 )
+                                if (recipe.rating == null && recipe.onlineRating != null) {
+                                    Text(
+                                        text = "(${stringResource(Res.string.online)})",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
+                            Spacer(modifier = Modifier.height(4.dp))
                             Row(
                                 modifier = Modifier
                                     .clickable {

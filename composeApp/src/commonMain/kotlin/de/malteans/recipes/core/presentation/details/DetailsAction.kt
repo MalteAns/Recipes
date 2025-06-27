@@ -19,4 +19,5 @@ sealed interface DetailsAction {
     data class OnTabSelected(val index: Int) : DetailsAction
 
     data class CustomServings(val servings: Int?) : DetailsAction
+    data class OnRatingChanged(val newRating: Int?) : DetailsAction
 }

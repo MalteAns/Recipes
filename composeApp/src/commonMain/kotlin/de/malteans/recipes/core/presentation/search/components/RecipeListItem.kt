@@ -47,6 +47,7 @@ import org.jetbrains.compose.resources.stringResource
 import recipes.composeapp.generated.resources.Res
 import recipes.composeapp.generated.resources.min
 import recipes.composeapp.generated.resources.recipe_img_2
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -141,7 +142,11 @@ fun RecipeListItem(
                     modifier = Modifier
                         .weight(1f)
                 ) {
-                    RatingBar(recipe, small = true)
+                    RatingBar(
+                        value = recipe.rating ?: recipe.onlineRating?.times(5)?.roundToInt(),
+                        online = recipe.rating == null && recipe.onlineRating != null,
+                        small = true
+                    )
                     Text(
                         text = recipe.name,
                         style = MaterialTheme.typography.titleMedium,

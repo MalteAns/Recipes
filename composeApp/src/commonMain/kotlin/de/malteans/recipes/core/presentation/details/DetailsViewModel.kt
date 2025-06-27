@@ -122,6 +122,15 @@ class DetailsViewModel(
                     customServings = action.servings
                 ) }
             }
+            is DetailsAction.OnRatingChanged -> {
+                viewModelScope.launch {
+                    repository.upsertRecipe(
+                        state.value.recipe?.copy(
+                            rating = action.newRating,
+                        ) ?: throw IllegalStateException("No recipe set for rating change")
+                    )
+                }
+            }
             else -> throw IllegalArgumentException("Action not implemented in ViewModel: $action")
         }
     }
