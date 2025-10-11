@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -74,7 +75,6 @@ fun MainScreen(
             modifier = Modifier
                 .padding(bottom = 48.dp)
         ) },
-        modifier = Modifier.fillMaxSize(),
         bottomBar = {
             BottomAppBar(
                 modifier = Modifier
@@ -118,7 +118,10 @@ fun MainScreen(
                         .weight(1f)
                 )
             }
-        }
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
     ) { pad ->
         Column(
             modifier = Modifier
