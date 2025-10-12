@@ -1,0 +1,25 @@
+package de.malteans.recipes.core.domain
+
+data class Recipe(
+    val id: Long = 0L,
+    val cloudId: Long? = null,
+    val sourceUrl: String? = null,
+    val name: String = "",
+    val cloudName: String? = null,
+    val description: String = "",
+    val cloudDescription: String? = null,
+    val imageUrl: String = "",
+    val cloudImageUrl: String? = null,
+    val ingredients: List<RecipeIngredientItem> = emptyList(),
+    val cloudIngredients: List<RecipeIngredientItem>? = null,
+    val steps: List<String> = emptyList(),
+    val cloudSteps: List<String>? = null,
+    val workTime: Int? = null,
+    val cloudWorkTime: Int? = null,
+    val totalTime: Int? = null,
+    val cloudTotalTime: Int? = null,
+    val servings: Int? = null,
+    val cloudServings: Int? = null,
+    val rating: Int? = null,
+    val onlineRating: Double? = null,
+)
