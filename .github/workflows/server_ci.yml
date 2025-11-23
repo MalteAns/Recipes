@@ -29,6 +29,8 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew clean :shared:build :server:build check
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
 
 #      - name: Run Unit Tests
 #        run: ./gradlew test
