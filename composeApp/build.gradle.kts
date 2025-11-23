@@ -14,6 +14,13 @@ plugins {
     alias(libs.plugins.room)
 }
 
+private val apiToken: String = gradleLocalProperties(rootDir, rootProject.providers)
+    .getProperty("API_TOKEN")
+    ?: System.getenv("API_TOKEN")
+    ?: throw IllegalStateException(
+        "Missing API_TOKEN property in local.properties or environment variables"
+    )
+
 val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
     notCompatibleWithConfigurationCache("Custom script writes file dynamically")
 
@@ -42,7 +49,7 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
     }
 
@@ -133,22 +140,19 @@ kotlin {
     }
 }
 
-private val apiToken: String = gradleLocalProperties(rootDir, rootProject.providers)
-    .getProperty("API_TOKEN")
-    ?: throw IllegalStateException(
-        "Missing API_TOKEN property in local.properties"
-    )
-
 android {
     namespace = "de.malteans.recipes"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    buildFeatures.buildConfig = true
+
     defaultConfig {
-        applicationId = "de.malteans.recipes"
+        applicationId = libs.versions.applicationId.get()
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = libs.versions.projectVersionCode.get().toInt()
+        versionName = libs.versions.projectVersionName.get()
+        versionNameSuffix = libs.versions.projectVersionNameSuffix.get()
         buildConfigField("String", "API_TOKEN", "\"$apiToken\"")
     }
     packaging {
@@ -158,15 +162,13 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    buildFeatures {
-        buildConfig = true
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
@@ -180,10 +182,14 @@ compose.desktop {
     application {
         mainClass = "de.malteans.recipes.MainKt"
 
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
+
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "de.malteans.recipes"
-            packageVersion = "1.0.0"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
+            packageName = libs.versions.applicationName.get()
+            packageVersion = libs.versions.projectVersionName.get()
         }
     }
 }

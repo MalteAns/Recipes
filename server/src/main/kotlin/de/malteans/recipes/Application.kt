@@ -37,7 +37,7 @@ fun Application.module() {
     install(Authentication) {
         bearer("bearer") {
             authenticate { tokenCredential ->
-                if (tokenCredential.token == System.getenv("API_TOKEN")) UserIdPrincipal("api-user") else null
+                if (System.getenv("API_TOKEN").equals(tokenCredential.token)) UserIdPrincipal("api-user") else null
             }
         }
     }

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "de.malteans.recipes"
-version = "1.0.0"
+version = libs.versions.projectVersionName.get()
 application {
     mainClass.set("de.malteans.recipes.ApplicationKt")
 
@@ -26,8 +26,9 @@ dependencies {
     // Exposed + MariaDB (DB)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
-    implementation(libs.mariadb.jdbc)
     implementation(libs.exposed.java.time) // DateTime support
+    implementation(libs.mariadb.jdbc) // MariaDB
+    implementation(libs.sqlite.jdbc) // SQLite
     // Http Client (for status page images),
     implementation(libs.ktor.client.cio)
 }

@@ -15,4 +15,6 @@ object StepsTable : Table("steps") {
     val stepNumber = integer("stepNumber")
     val description = text("description")
     val duration = integer("duration").nullable()
+
+    override val primaryKey = PrimaryKey(id, name = "pk_steps_id")
 }

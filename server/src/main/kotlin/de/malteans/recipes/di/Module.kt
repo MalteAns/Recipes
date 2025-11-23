@@ -10,10 +10,8 @@ import org.koin.dsl.module
 val module = module {
     single<Database> {
         Database.connect(
-            url = "jdbc:mariadb://192.168.178.53:3306/recipesDb",
-            driver = "org.mariadb.jdbc.Driver",
-            user = System.getenv("DB_USER"),
-            password = System.getenv("DB_PASSWORD"),
+            url = "jdbc:sqlite:recipes.db",
+            driver = "org.sqlite.JDBC",
         )
     }
 

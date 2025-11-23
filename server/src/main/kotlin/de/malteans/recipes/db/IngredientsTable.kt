@@ -15,4 +15,6 @@ object IngredientsTable : Table("ingredients") {
         fkName = "ingredients_recipe_id",
     )
     val ingredientUnit = text("ingredientUnit").nullable()
+
+    override val primaryKey = PrimaryKey(id, name = "pk_ingredients_id")
 }

@@ -15,4 +15,6 @@ object RecipesTable : Table("recipes") {
     val onlineRating = double("onlineRating").nullable()
     val sourceUrl = text("sourceUrl").nullable()
     val addedAt = timestamp("addedAt").nullable()
+
+    override val primaryKey = PrimaryKey(id, name = "pk_recipes_id")
 }
