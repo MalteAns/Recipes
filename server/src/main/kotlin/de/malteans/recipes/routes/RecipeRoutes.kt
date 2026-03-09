@@ -1,7 +1,10 @@
 package de.malteans.recipes.routes
 
+import de.malteans.recipes.dto.AddRecipeDto
 import de.malteans.recipes.dto.RecipesResponseDto
 import de.malteans.recipes.services.RecipeService
+import io.ktor.http.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -12,7 +15,13 @@ fun Route.registerRecipeRoutes(
         val query = call.request.queryParameters["query"]
         val recipes = recipeService.getAllRecipes(query ?: "")
         call.respond(
-            RecipesResponseDto(recipes)
+            HttpStatusCode.OK,
+            RecipesResponseDto(recipes),
         )
+    }
+    post("/recipes") {
+        val recipeDto = call.receive<AddRecipeDto>()
+        val id = recipeService.addRecipe(recipeDto)
+        call.respond(HttpStatusCode.Created, id)
     }
 }

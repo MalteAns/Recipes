@@ -12,6 +12,7 @@ import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.defaultheaders.*
+import kotlinx.serialization.json.Json
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
@@ -24,7 +25,11 @@ fun Application.module() {
     install(DefaultHeaders)
     install(AutoHeadResponse)
     install(CallLogging)
-    install(ContentNegotiation) { json() }
+    install(ContentNegotiation) {
+        json(Json {
+            ignoreUnknownKeys = true
+        })
+    }
     configureStatusPages()
 
     install(Koin) {
