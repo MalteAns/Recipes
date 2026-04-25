@@ -26,9 +26,8 @@ dependencies {
     // Exposed + MariaDB (DB)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
-    implementation(libs.exposed.java.time) // DateTime support
-    implementation(libs.mariadb.jdbc) // MariaDB
     implementation(libs.sqlite.jdbc) // SQLite
+    implementation(libs.exposed.java.time) // DateTime support
     // Http Client (for status page images),
     implementation(libs.ktor.client.cio)
 }
