@@ -12,4 +12,9 @@ interface RecipeService {
     suspend fun addRecipe(
         recipeDto: AddRecipeDto
     ): Int
+
+    suspend fun updateRecipe(
+        id: Int,
+        recipeDto: AddRecipeDto
+    )
 }

@@ -24,4 +24,14 @@ fun Route.registerRecipeRoutes(
         val id = recipeService.addRecipe(recipeDto)
         call.respond(HttpStatusCode.Created, id)
     }
+    post("/recipes/{id}") {
+        val recipeId = call.parameters["id"]?.toIntOrNull()
+        if (recipeId == null) {
+            call.respond(HttpStatusCode.BadRequest, "Invalid recipe ID")
+            return@post
+        }
+        val recipeDto = call.receive<AddRecipeDto>()
+        recipeService.updateRecipe(recipeId, recipeDto)
+        call.respond(HttpStatusCode.OK)
+    }
 }
