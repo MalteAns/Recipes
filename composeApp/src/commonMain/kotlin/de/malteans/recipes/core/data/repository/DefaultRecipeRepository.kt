@@ -89,12 +89,11 @@ class DefaultRecipeRepository(
     }
 
     override suspend fun uploadLocalRecipe(recipe: Recipe): Result<Long, DataError.Remote> {
-        val result = remoteDataSource.uploadRecipe(recipe.toAddRecipeDto())
-        result.onSuccess { cloudId ->
-            val updatedRecipe = recipe.copy(cloudId = cloudId, cloudName = recipe.name)
-            dao.upsertRecipe(updatedRecipe.toRecipeEntity())
-        }
-        return result
+        return remoteDataSource.uploadRecipe(recipe.toAddRecipeDto())
+            .onSuccess { cloudId ->
+                val updatedRecipe = recipe.copy(cloudId = cloudId, cloudName = recipe.name)
+                dao.upsertRecipe(updatedRecipe.toRecipeEntity())
+            }
     }
 
     override suspend fun deleteRecipeById(id: Long) {
