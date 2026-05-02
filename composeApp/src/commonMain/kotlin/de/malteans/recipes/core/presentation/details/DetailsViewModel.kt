@@ -84,6 +84,12 @@ class DetailsViewModel(
                     setRecipeId(id)
                 }
             }
+            is DetailsAction.OnUpload -> {
+                val recipe = state.value.recipe ?: return
+                viewModelScope.launch {
+                    repository.uploadLocalRecipe(recipe)
+                }
+            }
             is DetailsAction.ShowPlanDialog -> {
                 _state.update { it.copy(
                     showPlanDialog = true

@@ -35,7 +35,7 @@ interface RecipeDao {
     // Get recipe details with ingredients and steps
     @Transaction
     @Query("SELECT * FROM RecipeEntity WHERE id = :recipeId")
-    fun getRecipeWithDetails(recipeId: Long): Flow<RecipeWithDetails>
+    fun getRecipeWithDetails(recipeId: Long): Flow<RecipeWithDetails?>
 
     @Transaction
     @Query("SELECT * FROM RecipeEntity ORDER BY name COLLATE NOCASE ASC")

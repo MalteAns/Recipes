@@ -7,6 +7,10 @@ sealed class Endpoints(
         data object GetAll : Endpoints(
             "/recipes",
         )
+
+        data object Add : Endpoints(
+            "/recipes",
+        )
     }
 
     sealed interface Images {

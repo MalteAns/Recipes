@@ -11,6 +11,7 @@ sealed interface DetailsAction {
     data object OnDelete : DetailsAction
     data object OnEdit : DetailsAction
     data object OnSave : DetailsAction  // New action: trigger saving the cloud recipe locally
+    data object OnUpload : DetailsAction
 
     data object ShowPlanDialog : DetailsAction
     data object DismissPlanDialog : DetailsAction
