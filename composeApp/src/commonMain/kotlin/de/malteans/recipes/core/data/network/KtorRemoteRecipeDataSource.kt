@@ -4,7 +4,13 @@ import de.malteans.recipes.Endpoints
 import de.malteans.recipes.core.domain.errorHandling.DataError
 import de.malteans.recipes.core.domain.errorHandling.Result
 import de.malteans.recipes.core.domain.errorHandling.map
-import de.malteans.recipes.dto.*
+import de.malteans.recipes.dto.image.FinalizeResp
+import de.malteans.recipes.dto.image.ImagePresignReq
+import de.malteans.recipes.dto.image.PresignResp
+import de.malteans.recipes.dto.recipe.RecipeDto
+import de.malteans.recipes.dto.recipe.RecipesResponseDto
+import de.malteans.recipes.dto.recipe.add.AddRecipeDto
+import de.malteans.recipes.dto.recipe.add.AddRecipeResponseDto
 import de.malteans.recipes.model.Image
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -23,14 +29,17 @@ class KtorRemoteRecipeDataSource(
         }.map { it.recipes }
     }
 
-    override suspend fun uploadRecipe(recipeDto: AddRecipeDto): Result<Long, DataError.Remote> {
-        return oldSafeCall<Int> {
+    override suspend fun uploadRecipe(recipeDto: AddRecipeDto): kotlin.Result<Long> {
+        return safeCall<AddRecipeResponseDto> {
             client.post(Endpoints.Recipes.Add.url) {
                 header("Authorization", "Bearer ${ApiConfig.apiToken}")
                 contentType(ContentType.Application.Json)
                 setBody(recipeDto)
             }
-        }.map { it.toLong() }
+        }
+            .map { responseDto ->
+                (responseDto as AddRecipeResponseDto.AddRecipeSuccessDto).newRecipeCloudId
+            }
     }
 
     override suspend fun uploadImage(

@@ -72,4 +72,9 @@
     <string name="custom_servings_desc">Menge der Zutaten für eine andere Anzahl an Portionen anpassen.</string>
     <string name="upload_image">Bild hochladen</string>
     <string name="select_image">Bild auswählen</string>
+    <string name="source_url">Quellen-URL</string>
+    <string name="recipe_upload_success_toast">Rezept erfolgreich hochgeladen.</string>
+    <string name="recipe_upload_error_toast">Fehler beim Hochladen des Rezepts.</string>
+    <string name="recipe_upload_http_error_toast">Fehler beim Hochladen des Rezepts. (%1$i)</string>
+    <string name="recipe_upload_already_existing_toast">Dieses Rezept wurde bereits unter dem Namen '%1$s' hochgeladen.</string>
 </resources>

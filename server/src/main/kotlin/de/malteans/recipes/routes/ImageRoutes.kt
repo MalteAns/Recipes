@@ -1,8 +1,8 @@
 package de.malteans.recipes.routes
 
-import de.malteans.recipes.dto.FinalizeResp
-import de.malteans.recipes.dto.ImagePresignReq
-import de.malteans.recipes.dto.PresignResp
+import de.malteans.recipes.dto.image.FinalizeResp
+import de.malteans.recipes.dto.image.ImagePresignReq
+import de.malteans.recipes.dto.image.PresignResp
 import de.malteans.recipes.services.ImageService
 import io.ktor.http.*
 import io.ktor.server.request.*

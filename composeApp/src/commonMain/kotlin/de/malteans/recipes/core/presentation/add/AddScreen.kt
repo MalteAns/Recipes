@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import recipes.composeapp.generated.resources.*
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun AddScreenRoot(
@@ -555,8 +556,7 @@ fun AddScreen(
                                                 ),
                                                 keyboardActions = KeyboardActions(
                                                     onNext = {
-                                                        focusManager.clearFocus()
-                                                        onAction(AddAction.OnTabSelect(1))
+                                                        focusManager.moveFocus(FocusDirection.Down)
                                                     }
                                                 ),
                                             )
@@ -594,12 +594,40 @@ fun AddScreen(
                                             ),
                                             keyboardActions = KeyboardActions(
                                                 onNext = {
+                                                    focusManager.moveFocus(FocusDirection.Down)
+                                                }
+                                            ),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                        )
+                                    }
+                                    // SourceUrl ---------------------------------------------------
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                            .fillMaxWidth(),
+                                    ) {
+                                        OutlinedTextField(
+                                            value = state.sourceUrl,
+                                            singleLine = true,
+                                            onValueChange = {
+                                                onAction(AddAction.OnSourceUrlChange(it))
+                                            },
+                                            label = {
+                                                Text(stringResource(Res.string.source_url))
+                                            },
+                                            keyboardOptions = KeyboardOptions(
+                                                keyboardType = KeyboardType.Uri,
+                                                imeAction = ImeAction.Next
+                                            ),
+                                            keyboardActions = KeyboardActions(
+                                                onNext = {
                                                     focusManager.clearFocus()
                                                     onAction(AddAction.OnTabSelect(1))
                                                 }
                                             ),
                                             modifier = Modifier
-                                                .fillMaxWidth(),
+                                                .fillMaxWidth()
                                         )
                                     }
                                 }
@@ -701,7 +729,7 @@ fun AddScreen(
                                             }
                                             LaunchedEffect(deleteClicked.value) {
                                                 if (deleteClicked.value) {
-                                                    delay(3000)
+                                                    delay(3.seconds)
                                                     deleteClicked.value = false
                                                 }
                                             }

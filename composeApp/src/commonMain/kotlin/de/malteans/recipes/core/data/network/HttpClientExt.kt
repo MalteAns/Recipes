@@ -70,8 +70,15 @@ suspend inline fun <reified T> responseToResult(
                 kotlin.Result.failure(e)
             }
         }
-        else -> kotlin.Result.failure(HttpStatusException(response.status))
+        else -> {
+            val data = try {
+                response.body<T>()
+            } catch(_: NoTransformationFoundException) {
+                response.bodyAsText().ifBlank { null }
+            }
+            kotlin.Result.failure(HttpStatusException(response.status, data))
+        }
     }
 }
 
-data class HttpStatusException(val statusCode: HttpStatusCode) : Exception()
+data class HttpStatusException(val statusCode: HttpStatusCode, val data: Any? = null) : Exception()

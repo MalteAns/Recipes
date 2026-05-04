@@ -47,6 +47,7 @@ class AddViewModel(
             name = _state.value.name,
             description = _state.value.description,
             imageUrl = _state.value.imageUrl,
+            sourceUrl = _state.value.sourceUrl.ifBlank { null },
             ingredients = _state.value.ingredients.map { RecipeIngredientItem(it.key, it.value.first, it.value.second) },
             steps = _state.value.steps,
             servings = _state.value.servings,
@@ -68,7 +69,10 @@ class AddViewModel(
                     name = recipe.name,
                     description = recipe.description,
                     imageUrl = recipe.imageUrl,
-                    ingredients = recipe.ingredients.associate { it.ingredient to (it.amount to it.overrideUnit) },
+                    sourceUrl = recipe.sourceUrl ?: "",
+                    ingredients = recipe.ingredients.associate { ingredientItem ->
+                        ingredientItem.ingredient to (ingredientItem.amount to ingredientItem.overrideUnit)
+                    },
                     steps = recipe.steps,
                     workTime = recipe.workTime,
                     totalTime = recipe.totalTime,
@@ -94,6 +98,11 @@ class AddViewModel(
             is AddAction.OnImageUrlChange -> {
                 _state.update {
                     it.copy(imageUrl = action.imageUrl)
+                }
+            }
+            is AddAction.OnSourceUrlChange -> {
+                _state.update {
+                    it.copy(sourceUrl = action.sourceUrl)
                 }
             }
             is AddAction.OnIngredientCreate -> {

@@ -2,8 +2,8 @@ package de.malteans.recipes.services.impl
 
 import de.malteans.recipes.Endpoints
 import de.malteans.recipes.db.ImagesTable
-import de.malteans.recipes.dto.ImageDto
-import de.malteans.recipes.dto.ImagePresignReq
+import de.malteans.recipes.dto.image.ImageDto
+import de.malteans.recipes.dto.image.ImagePresignReq
 import de.malteans.recipes.model.ImageMeta
 import de.malteans.recipes.model.Presign
 import de.malteans.recipes.services.ImageService

@@ -12,6 +12,7 @@ sealed interface AddAction {
     data class OnNameChange(val name: String) : AddAction
     data class OnDescriptionChange(val description: String) : AddAction
     data class OnImageUrlChange(val imageUrl: String) : AddAction
+    data class OnSourceUrlChange(val sourceUrl: String) : AddAction
     data class OnIngredientCreate(val ingredient: Ingredient) : AddAction
     data class OnIngredientAdd(val ingredient: Ingredient) : AddAction
     data class OnIngredientEdit(val ingredient: Ingredient) : AddAction

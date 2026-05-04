@@ -1,4 +1,4 @@
-package de.malteans.recipes.dto
+package de.malteans.recipes.dto.recipe.add
 
 import kotlinx.serialization.Serializable
 
