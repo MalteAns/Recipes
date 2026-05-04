@@ -39,7 +39,7 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
             package de.malteans.recipes.core.data.network
 
             object DesktopBuildConfig {
-                const val API_TOKEN = "${'$'}apiToken"
+                const val API_TOKEN = $apiToken
             }
             """.trimIndent()
         )
@@ -153,7 +153,7 @@ android {
         versionCode = libs.versions.projectVersionCode.get().toInt()
         versionName = libs.versions.projectVersionName.get()
         versionNameSuffix = libs.versions.projectVersionNameSuffix.get()
-        buildConfigField("String", "API_TOKEN", "\"$apiToken\"")
+        buildConfigField("String", "API_TOKEN", apiToken)
     }
     packaging {
         resources {
