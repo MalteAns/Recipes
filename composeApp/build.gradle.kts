@@ -39,7 +39,7 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
             package de.malteans.recipes.core.data.network
 
             object DesktopBuildConfig {
-                const val API_TOKEN = "$apiToken"
+                const val API_TOKEN = $apiToken
             }
             """.trimIndent()
         )
