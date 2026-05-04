@@ -2,14 +2,19 @@ package de.malteans.recipes.core.presentation.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.malteans.recipes.core.data.network.RemoteRecipeDataSource
 import de.malteans.recipes.core.domain.Recipe
 import de.malteans.recipes.core.domain.RecipeIngredientItem
 import de.malteans.recipes.core.domain.RecipeRepository
+import io.ktor.http.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class AddViewModel(
-    private val repository: RecipeRepository
+    private val repository: RecipeRepository,
+    private val remoteRecipeDataSource: RemoteRecipeDataSource,
 ) : ViewModel() {
 
     private val _allIngredients = repository
@@ -182,6 +187,29 @@ class AddViewModel(
                     it.copy(workTime = action.time)
                 }
             }
+            is AddAction.OnUploadImage -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _state.update { it.copy(imageUploadInProgress = true) }
+                    remoteRecipeDataSource.uploadImage(
+                        fileName = action.imageUploadData.filename,
+                        mimeType = ContentType.parse(action.imageUploadData.mimeType),
+                        imageBytes = action.imageUploadData.bytes,
+                    )
+                        .onSuccess { image ->
+                            _state.update { it.copy(
+                                imageUploadInProgress = false,
+                                imageUrl = image.publicUrl,
+                            ) }
+                        }
+                        .onFailure { error ->
+                            // TODO: Feedback error with snackbar
+                            _state.update { it.copy(
+                                imageUploadInProgress = false,
+                            ) }
+                        }
+                }
+            }
+
             is AddAction.OnTabSelect -> {
                 _state.update {
                     it.copy(selectedTabIndex = action.index)

@@ -70,4 +70,6 @@
     <string name="pre_cooking">Vorkochen</string>
     <string name="custom_servings">Benutzerdefinierte Portionen</string>
     <string name="custom_servings_desc">Menge der Zutaten für eine andere Anzahl an Portionen anpassen.</string>
+    <string name="upload_image">Bild hochladen</string>
+    <string name="select_image">Bild auswählen</string>
 </resources>

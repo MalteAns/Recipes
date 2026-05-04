@@ -12,10 +12,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -31,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.malteans.recipes.core.domain.Ingredient
 import de.malteans.recipes.core.presentation.add.components.IngredientListItem
+import de.malteans.recipes.core.presentation.add.components.rememberImagePickerLauncher
 import de.malteans.recipes.core.presentation.components.CustomDialog
 import de.malteans.recipes.core.presentation.components.SearchableDropdown
 import de.malteans.recipes.core.presentation.components.SnackbarManager
@@ -64,16 +62,10 @@ fun AddScreenRoot(
 fun AddScreen(
     state: AddState,
     onAction: (AddAction) -> Unit,
-    onRecipeAdd: suspend () -> Long,
+    onRecipeAdd: suspend () -> Long, // TODO: refactor with event on finish instead
 ) {
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
-
-    var validToAdd by remember { mutableStateOf(false) }
-
-    LaunchedEffect(state.name) {
-        validToAdd = state.name.isNotBlank()
-    }
 
     val pagerState = rememberPagerState { 3 }
 
@@ -91,13 +83,23 @@ fun AddScreen(
             }
     }
 
+    var validToAdd by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.name) {
+        validToAdd = state.name.isNotBlank()
+    }
+
+    val imagePickerLauncher = rememberImagePickerLauncher { pickedImageData ->
+        onAction(AddAction.OnUploadImage(pickedImageData))
+    }
+
     if (state.showIngredientDialog) {
         var amount by remember { mutableStateOf(state.ingredients[state.currentIngredient!!]?.first?.toString() ?: "") }
         var unit by remember { mutableStateOf(state.ingredients[state.currentIngredient!!]?.second ?: state.currentIngredient.unit) }
 
         var isValid by remember { mutableStateOf(false) }
 
-        var onEndRequest: (Boolean) -> Unit = { valid ->
+        val onEndRequest: (Boolean) -> Unit = { valid ->
             if (valid) {
                 onAction(AddAction.OnIngredientDialogDismiss)
                 onAction(AddAction.OnIngredientChange(state.currentIngredient!!,
@@ -561,6 +563,7 @@ fun AddScreen(
                                         }
                                     }
                                     // ImageUrl ---------------------------------------------------
+                                    // TODO: Implement drag and drop for upload
                                     Row(
                                         modifier = Modifier
                                             .padding(vertical = 4.dp)
@@ -568,15 +571,23 @@ fun AddScreen(
                                     ) {
                                         OutlinedTextField(
                                             value = state.imageUrl,
+                                            singleLine = true,
                                             onValueChange = {
                                                 onAction(AddAction.OnImageUrlChange(it))
                                             },
-                                            singleLine = true,
                                             label = {
                                                 Text("Image URL")
                                             },
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
+                                            trailingIcon = {
+                                                IconButton(
+                                                    onClick = { imagePickerLauncher.launch() }
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.FileUpload,
+                                                        contentDescription = stringResource(Res.string.upload_image)
+                                                    )
+                                                }
+                                            },
                                             keyboardOptions = KeyboardOptions(
                                                 keyboardType = KeyboardType.Uri,
                                                 imeAction = ImeAction.Next
@@ -587,6 +598,8 @@ fun AddScreen(
                                                     onAction(AddAction.OnTabSelect(1))
                                                 }
                                             ),
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
                                         )
                                     }
                                 }

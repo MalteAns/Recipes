@@ -18,6 +18,8 @@ data class AddState(
     val showIngredientDialog: Boolean = false,
     val currentIngredient: Ingredient? = null,
     val isEditingIngredient: Boolean = false,
+    val imageUploadInProgress: Boolean = false,
+    val imageUploadError: Throwable? = null,
 
     val allIngredients: List<Ingredient> = emptyList(),
 
