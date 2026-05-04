@@ -1,6 +1,5 @@
 package de.malteans.recipes.core.data.network
 
-import de.malteans.recipes.Constants
 import de.malteans.recipes.Endpoints
 import de.malteans.recipes.core.domain.errorHandling.DataError
 import de.malteans.recipes.core.domain.errorHandling.Result
@@ -68,7 +67,7 @@ class KtorRemoteRecipeDataSource(
             Image(
                 id = presignResp.id,
                 filename = fileName,
-                publicUrl = Constants.BASE_URL + finalizeResp.publicUrl,
+                publicUrl = "appServer:" + finalizeResp.publicUrl,
                 mimeType = mimeType.toString(),
                 byteSize = imageBytes.size,
                 width = finalizeResp.width,

@@ -23,7 +23,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
+import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import de.malteans.recipes.core.data.network.ApiConfig
 import de.malteans.recipes.core.domain.Recipe
 import de.malteans.recipes.core.presentation.components.RatingBar
 import de.malteans.recipes.core.presentation.details.components.CustomClockIcon
@@ -69,8 +74,12 @@ fun RecipeListItem(
                 var imageLoadResult by remember {
                     mutableStateOf<Result<Painter>?>(null)
                 }
+                val context = LocalPlatformContext.current
                 val painter = rememberAsyncImagePainter(
-                    model = recipe.imageUrl,
+                    model = ImageRequest.Builder(context)
+                        .data(recipe.getUrl())
+                        .httpHeaders(NetworkHeaders.Builder().set("Authorization", "Bearer ${ApiConfig.apiToken}").build())
+                        .build(),
                     onSuccess = {
                         imageLoadResult =
                             if (it.painter.intrinsicSize.width > 1 && it.painter.intrinsicSize.height > 1) {

@@ -241,7 +241,7 @@ fun DetailsScreen(
     }
 
     ImageBackground(
-        imageUrl = state.recipe?.imageUrl,
+        imageUrl = state.recipe?.getUrl(),
         onBackClick = { onAction(DetailsAction.OnBack) },
         rightIcons = @Composable {
             if (state.recipe?.sourceUrl != null && state.recipe.sourceUrl.isNotBlank() && state.recipe.sourceUrl.startsWith("https://")) {
