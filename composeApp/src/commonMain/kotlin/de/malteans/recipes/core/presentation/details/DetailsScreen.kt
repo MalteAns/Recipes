@@ -351,7 +351,7 @@ fun DetailsScreen(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                     ) {
-                        if (recipe.sourceUrl != null && recipe.sourceUrl.isNotBlank() && recipe.sourceUrl.startsWith("https://")) {
+                        if (!recipe.sourceUrl.isNullOrBlank() && recipe.sourceUrl.startsWith("https://")) {
                             Icon(
                                 imageVector = CustomOpenInBrowserIcon,
                                 contentDescription = "Open Source",
@@ -395,7 +395,7 @@ fun DetailsScreen(
                                     .size(28.dp)
                             )
                         }
-                        if (state.recipe.isLocalOnly()) {
+                        if (recipe.isLocalOnly()) {
                             Icon(
                                 imageVector = Icons.Default.CloudUpload,
                                 contentDescription = "Upload Recipe",

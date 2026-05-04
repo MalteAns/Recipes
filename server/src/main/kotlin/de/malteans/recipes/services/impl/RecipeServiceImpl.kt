@@ -79,7 +79,7 @@ class RecipeServiceImpl(
         }
     }
 
-    private fun saveRecipeData(recipeId: Int, recipeDto: AddRecipeDto, isUpdate: Boolean) {
+    private fun saveRecipeData(recipeId: Int, recipeDto: AddRecipeDto, isUpdate: Boolean): Result<Int> {
         if (isUpdate) {
             RecipesTable.update({ RecipesTable.id eq recipeId }) { row ->
                 row[name] = recipeDto.name
@@ -90,6 +90,9 @@ class RecipeServiceImpl(
                 row[servings] = recipeDto.servings
                 row[onlineRating] = recipeDto.onlineRating
                 row[sourceUrl] = recipeDto.sourceUrl
+            }.let { updatedRows ->
+                if (updatedRows == 0)
+                    return Result.failure(IllegalArgumentException("Recipe with id $recipeId not found"))
             }
             IngredientsTable.deleteWhere { IngredientsTable.recipeId eq recipeId }
             StepsTable.deleteWhere { StepsTable.recipeId eq recipeId }
@@ -140,6 +143,7 @@ class RecipeServiceImpl(
                 row[duration] = stepDto.duration
             }
         }
+        return Result.success(recipeId)
     }
 
     private fun ResultRow.toRecipeDto(
