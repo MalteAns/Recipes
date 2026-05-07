@@ -77,4 +77,6 @@
     <string name="recipe_upload_error_toast">Fehler beim Hochladen des Rezepts.</string>
     <string name="recipe_upload_http_error_toast">Fehler beim Hochladen des Rezepts. (%1$i)</string>
     <string name="recipe_upload_already_existing_toast">Dieses Rezept wurde bereits unter dem Namen '%1$s' hochgeladen.</string>
+    <string name="delete">Löschen</string>
+    <string name="submit">Absenden</string>
 </resources>

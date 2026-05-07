@@ -127,17 +127,22 @@ class AddViewModel(
                     )
                 }
             }
-            is AddAction.OnIngredientChange -> {
-                _state.update {
-                    val newIngredients = it.ingredients.toMutableMap()
-                    var ingredient = action.ingredient
+            is AddAction.OnSubmitIngredientDialog -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val ingredient = action.ingredient
                     if (ingredient.id == 0L) {
-                        ingredient = _allIngredients.value.first { it.name == ingredient.name }
+                        repository.upsertIngredient(
+                            ingredient.copy(unit = action.unit ?: "")
+                        )
                     }
-                    newIngredients[ingredient] = Pair(action.amount, action.overrideUnit)
-                    it.copy(
-                        ingredients = newIngredients
-                    )
+                    _state.update { state ->
+                        val newIngredients = state.ingredients.toMutableMap()
+                        newIngredients[ingredient] = Pair(action.amount, action.unit)
+                        state.copy(
+                            showIngredientDialog = false,
+                            ingredients = newIngredients,
+                        )
+                    }
                 }
             }
             is AddAction.OnIngredientRemove -> {

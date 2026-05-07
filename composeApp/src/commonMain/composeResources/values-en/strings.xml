@@ -77,4 +77,6 @@
     <string name="recipe_upload_error_toast">Failed to upload the recipe.</string>
     <string name="recipe_upload_http_error_toast">Failed to upload the recipe. (%1$i)</string>
     <string name="recipe_upload_already_existing_toast">This recipe was already uploaded with the name '%1$s'.</string>
+    <string name="delete">Delete</string>
+    <string name="submit">Submit</string>
 </resources>

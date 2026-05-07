@@ -1,7 +1,7 @@
 package de.malteans.recipes.core.presentation.add
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,9 +30,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.malteans.recipes.core.domain.Ingredient
 import de.malteans.recipes.core.presentation.add.components.IngredientListItem
 import de.malteans.recipes.core.presentation.add.components.rememberImagePickerLauncher
+import de.malteans.recipes.core.presentation.components.AnimatedDoubleIconButton
 import de.malteans.recipes.core.presentation.components.CustomDialog
 import de.malteans.recipes.core.presentation.components.SearchableDropdown
 import de.malteans.recipes.core.presentation.components.SnackbarManager
+import de.malteans.recipes.core.presentation.util.UiText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -59,6 +62,7 @@ fun AddScreenRoot(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddScreen(
     state: AddState,
@@ -94,22 +98,20 @@ fun AddScreen(
         onAction(AddAction.OnUploadImage(pickedImageData))
     }
 
-    if (state.showIngredientDialog) {
-        var amount by remember { mutableStateOf(state.ingredients[state.currentIngredient!!]?.first?.toString() ?: "") }
-        var unit by remember { mutableStateOf(state.ingredients[state.currentIngredient!!]?.second ?: state.currentIngredient.unit) }
+    if (state.showIngredientDialog && state.currentIngredient != null) {
+        var amount by remember { mutableStateOf(state.ingredients[state.currentIngredient]?.first?.toString() ?: "") }
+        var unit by remember { mutableStateOf(state.ingredients[state.currentIngredient]?.second ?: state.currentIngredient.unit) }
 
-        var isValid by remember { mutableStateOf(false) }
+        val isValid by remember(amount) { derivedStateOf {
+            amount.isBlank() || (amount.toDoubleOrNull() != null && amount.toDouble() > 0)
+        } }
 
-        val onEndRequest: (Boolean) -> Unit = { valid ->
-            if (valid) {
-                onAction(AddAction.OnIngredientDialogDismiss)
-                onAction(AddAction.OnIngredientChange(state.currentIngredient!!,
-                    if (amount.isBlank()) null else amount.toDouble(), unit))
+        val onEndRequest = {
+            if (isValid) {
+                onAction(AddAction.OnSubmitIngredientDialog(
+                    state.currentIngredient,
+                    amount.ifBlank { null }?.toDoubleOrNull(), unit.ifBlank { null } ))
             }
-        }
-
-        LaunchedEffect(amount, unit) {
-            isValid = unit.isNotBlank() && (amount.isBlank() || (amount.toDoubleOrNull() != null && amount.toDouble() > 0))
         }
 
         CustomDialog(
@@ -118,7 +120,7 @@ fun AddScreen(
                     text = stringResource(
                         if (state.isEditingIngredient) Res.string.edit_dialog_title
                             else Res.string.add_dialog_title,
-                        state.currentIngredient!!.name),
+                        state.currentIngredient.name),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -126,14 +128,14 @@ fun AddScreen(
                 )
             },
             rightIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Submit",
-                    tint = if (isValid) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    modifier = Modifier
-                        .clickable { onEndRequest(isValid) }
-                )
+                IconButton(onClick = { onEndRequest() }) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Submit",
+                        tint = if (isValid) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
             },
             onDismissRequest = {
                 onAction(AddAction.OnIngredientDialogDismiss)
@@ -141,15 +143,10 @@ fun AddScreen(
         ) {
             OutlinedTextField(
                 value = amount,
-                onValueChange = {
-                    amount = it
-                },
                 singleLine = true,
-                label = {
-                    Text(stringResource(Res.string.amount))
-                },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                isError = amount.isNotBlank() && (amount.toDoubleOrNull() == null || amount.toDouble() <= 0),
+                onValueChange = { amount = it },
+                label = { Text(stringResource(Res.string.amount)) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
@@ -157,140 +154,120 @@ fun AddScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         focusManager.clearFocus()
-                        onEndRequest(isValid)
+                        onEndRequest()
                     }
                 ),
-                isError = !(amount.isBlank() || (amount.toDoubleOrNull() != null && amount.toDouble() > 0))
+                modifier = Modifier
+                    .fillMaxWidth()
             )
             OutlinedTextField(
                 value = unit,
-                onValueChange = {
-                    unit = it
-                },
                 singleLine = true,
-                label = {
-                    Text(stringResource(Res.string.unit))
-                },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                isError = unit.isBlank(),
+                onValueChange = { unit = it },
+                label = { Text(stringResource(Res.string.unit)) },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {
                         focusManager.clearFocus()
-                        onEndRequest(isValid)
+                        onEndRequest()
                     }
                 ),
+                modifier = Modifier
+                    .fillMaxWidth()
             )
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .statusBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f),
-                horizontalAlignment = Alignment.Start
-            ) {
-                if (state.editingRecipe == null) { // Is Add
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear the form",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .clickable {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = if(state.editingRecipe != null) stringResource(Res.string.edit_recipe)
+                            else stringResource(Res.string.add_recipe),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                navigationIcon = {
+                    if (state.editingRecipe == null) {
+                        IconButton(onClick = {
+                            onAction(AddAction.OnClear)
+                            focusManager.clearFocus()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear the form"
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = {
+                            onAction(AddAction.OnBack)
+                            focusManager.clearFocus()
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = "Back without saving"
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            focusManager.clearFocus()
+                            scope.launch {
+                                val id = onRecipeAdd()
                                 onAction(AddAction.OnClear)
-                                focusManager.clearFocus()
-                            }
-                    )
-                } else { // Is Edit
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = "Back without saving",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .clickable {
-                                onAction(AddAction.OnBack)
-                                focusManager.clearFocus()
-                            }
-                    )
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .wrapContentWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = if(state.editingRecipe != null) stringResource(Res.string.edit_recipe)
-                        else stringResource(Res.string.add_recipe),
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f),
-                horizontalAlignment = Alignment.End
-            ) {
-                val resMessage = stringResource(Res.string.recipe_added_snackbar, "%NAME%")
-                val resShow = stringResource(Res.string.show)
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Add the recipe",
-                    tint = if (validToAdd) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    modifier = Modifier
-                        .clickable {
-                            if (validToAdd) {
-                                focusManager.clearFocus()
-                                scope.launch {
-                                    val id = onRecipeAdd()
-                                    onAction(AddAction.OnClear)
-                                    if (state.editingRecipe != null) {
-                                        onAction(AddAction.OnRecipeShow(id))
-                                    } else {
-                                        SnackbarManager.showSnackbar(
-                                            message = resMessage.replace("%NAME%", state.name),
-                                            actionLabel = resShow,
-                                            onAction = { onAction(AddAction.OnRecipeShow(id)) },
-                                            duration = SnackbarDuration.Long,
-                                            withDismissAction = true,
-                                        )
-                                    }
+                                if (state.editingRecipe != null) {
+                                    onAction(AddAction.OnRecipeShow(id))
+                                } else {
+                                    SnackbarManager.showSnackbar(
+                                        message = UiText.Resource(Res.string.recipe_added_snackbar, state.name),
+                                        actionLabel = UiText.Resource(Res.string.show),
+                                        onAction = { onAction(AddAction.OnRecipeShow(id)) },
+                                        duration = SnackbarDuration.Long,
+                                        withDismissAction = true,
+                                    )
                                 }
                             }
-                        }
+                        },
+                        enabled = validToAdd,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Add the recipe",
+                            tint = if (validToAdd) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
+            )
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures { focusManager.clearFocus() }
             }
-        }
+    ) { paddingValues ->
         Surface(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
             color = MaterialTheme.colorScheme.surfaceContainer,
             shape = RoundedCornerShape(
                 topStart = 32.dp,
                 topEnd = 32.dp
-            )
+            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
             ) {
                 TabRow(
                     selectedTabIndex = state.selectedTabIndex,
@@ -360,11 +337,11 @@ fun AddScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                ) {pageIndex ->
+                ) { pageIndex ->
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize(),
                         contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxSize()
                     ) {
                         when (pageIndex) {
                             0 -> { // General -----------------------------------------------------
@@ -572,6 +549,7 @@ fun AddScreen(
                                         OutlinedTextField(
                                             value = state.imageUrl,
                                             singleLine = true,
+                                            enabled = !state.imageUploadInProgress,
                                             onValueChange = {
                                                 onAction(AddAction.OnImageUrlChange(it))
                                             },
@@ -579,14 +557,24 @@ fun AddScreen(
                                                 Text("Image URL")
                                             },
                                             trailingIcon = {
-                                                IconButton(
-                                                    onClick = { imagePickerLauncher.launch() }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.FileUpload,
-                                                        contentDescription = stringResource(Res.string.upload_image)
-                                                    )
-                                                }
+                                                AnimatedDoubleIconButton(
+                                                    showSecondary = state.imageUploadInProgress,
+                                                    enabled = !state.imageUploadInProgress,
+                                                    onClick = { imagePickerLauncher.launch() },
+                                                    primaryIcon = {
+                                                        Icon(
+                                                            imageVector = Icons.Default.FileUpload,
+                                                            contentDescription = stringResource(Res.string.upload_image)
+                                                        )
+                                                    },
+                                                    secondaryIcon = {
+                                                        CircularProgressIndicator(
+                                                            strokeWidth = 3.dp,
+                                                            modifier = Modifier
+                                                                .size(24.dp)
+                                                        )
+                                                    }
+                                                )
                                             },
                                             keyboardOptions = KeyboardOptions(
                                                 keyboardType = KeyboardType.Uri,
@@ -639,19 +627,17 @@ fun AddScreen(
                                         .fillMaxSize()
                                 ) {
                                     SearchableDropdown(
-                                        options = state.allIngredients.associate { it to it.name },
-                                        selectedOption = Pair("", ""),
-                                        onValueChanged = {
-                                            val ingredient = it as Ingredient
-                                            onAction(AddAction.OnIngredientAdd(ingredient))
-                                        },
+                                        options = state.allIngredients.associateWith { it.name },
+                                        selectedOption = Pair(null, ""),
                                         onValueAdded = {
                                             val ingredient = Ingredient(
                                                 name = it,
-                                                unit = "g",
+                                                unit = "",
                                             )
-                                            onAction(AddAction.OnIngredientCreate(ingredient))
                                             onAction(AddAction.OnIngredientAdd(ingredient))
+                                        },
+                                        onValueChanged = {
+                                            onAction(AddAction.OnIngredientAdd(it))
                                         },
                                         label = { Text(text = stringResource(Res.string.add_ingredient) + "…") },
                                         modifier = Modifier
@@ -664,8 +650,7 @@ fun AddScreen(
                                                 .weight(1f)
                                                 .fillMaxWidth()
                                         ) {
-                                            items(state.ingredients.map { Triple(it.key, it.value.first, it.value.second) })
-                                            { triple ->
+                                            items(state.ingredients.map { Triple(it.key, it.value.first, it.value.second) }) { triple ->
                                                 val ingredient = triple.first
                                                 val amount = triple.second
                                                 val unit = if (triple.third != null && triple.third != ingredient.unit) triple.third
@@ -714,7 +699,7 @@ fun AddScreen(
                                                     .padding(top = 4.dp)
                                                     .clickable {
                                                         onAction(AddAction.OnStepAdd(0))
-                                                    },
+                                                    }
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Add,
@@ -723,26 +708,23 @@ fun AddScreen(
                                             }
                                         }
                                         items(state.steps.size) { index ->
-                                            val deleteClicked = remember { mutableStateOf(false) }
+                                            var deleteClicked by remember { mutableStateOf(false) }
                                             LaunchedEffect(state.steps[index]) {
-                                                deleteClicked.value = false
+                                                deleteClicked = false
                                             }
-                                            LaunchedEffect(deleteClicked.value) {
-                                                if (deleteClicked.value) {
+                                            LaunchedEffect(deleteClicked) {
+                                                if (deleteClicked) {
                                                     delay(3.seconds)
-                                                    deleteClicked.value = false
+                                                    deleteClicked = false
                                                 }
                                             }
 
                                             Row (
+                                                verticalAlignment = Alignment.CenterVertically,
                                                 modifier = Modifier
-                                                    .fillMaxWidth(),
-                                                verticalAlignment = Alignment.CenterVertically
+                                                    .fillMaxWidth()
                                             ) {
-                                                Column(
-                                                    modifier = Modifier
-                                                        .weight(1f),
-                                                ) {
+                                                Column(modifier = Modifier.weight(1f)) {
                                                     OutlinedTextField(
                                                         value = state.steps[index],
                                                         onValueChange = {
@@ -759,27 +741,28 @@ fun AddScreen(
                                                             .fillMaxWidth(),
                                                     )
                                                 }
-                                                Column (
-                                                    modifier = Modifier
-                                                        .padding(start = 8.dp)
-                                                        .clickable {
-                                                            if (state.steps.size > 1) {
-                                                                if (!deleteClicked.value) {
-                                                                    deleteClicked.value = true
-                                                                } else {
-                                                                    onAction(AddAction.OnStepRemove(index))
-                                                                    deleteClicked.value = false
-                                                                }
+                                                Column {
+                                                    IconButton(
+                                                        onClick = {
+                                                            if (!deleteClicked) {
+                                                                deleteClicked = true
+                                                            } else {
+                                                                onAction(AddAction.OnStepRemove(index))
+                                                                deleteClicked = false
                                                             }
                                                         },
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Delete,
-                                                        contentDescription = "Remove step",
-                                                        tint = if (state.steps.size > 1 && deleteClicked.value) MaterialTheme.colorScheme.error
-                                                            else if (state.steps.size > 1) MaterialTheme.colorScheme.onSurface
-                                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                                    )
+                                                        enabled = state.steps.size > 1
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Delete,
+                                                            contentDescription = "Remove step",
+                                                            tint = when {
+                                                                state.steps.size == 1 -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                                                deleteClicked -> MaterialTheme.colorScheme.error
+                                                                else -> MaterialTheme.colorScheme.onSurface
+                                                            },
+                                                        )
+                                                    }
                                                 }
                                             }
                                             Row(

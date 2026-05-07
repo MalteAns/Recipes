@@ -16,7 +16,7 @@ sealed interface AddAction {
     data class OnIngredientCreate(val ingredient: Ingredient) : AddAction
     data class OnIngredientAdd(val ingredient: Ingredient) : AddAction
     data class OnIngredientEdit(val ingredient: Ingredient) : AddAction
-    data class OnIngredientChange(val ingredient: Ingredient, val amount: Double?, val overrideUnit: String?) : AddAction
+    data class OnSubmitIngredientDialog(val ingredient: Ingredient, val amount: Double?, val unit: String?) : AddAction
     data class OnIngredientRemove(val ingredient: Ingredient) : AddAction
     data class OnStepAdd(val index: Int) : AddAction
     data class OnStepChange(val newValue: String, val index: Int) : AddAction
