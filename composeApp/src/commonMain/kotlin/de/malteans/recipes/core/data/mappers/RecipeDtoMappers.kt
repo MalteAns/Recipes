@@ -3,11 +3,11 @@ package de.malteans.recipes.core.data.mappers
 import de.malteans.recipes.core.domain.Ingredient
 import de.malteans.recipes.core.domain.Recipe
 import de.malteans.recipes.core.domain.RecipeIngredientItem
-import de.malteans.recipes.dto.AddIngredientDto
-import de.malteans.recipes.dto.AddRecipeDto
-import de.malteans.recipes.dto.AddStepDto
-import de.malteans.recipes.dto.IngredientDto
-import de.malteans.recipes.dto.RecipeDto
+import de.malteans.recipes.dto.recipe.IngredientDto
+import de.malteans.recipes.dto.recipe.RecipeDto
+import de.malteans.recipes.dto.recipe.add.AddIngredientDto
+import de.malteans.recipes.dto.recipe.add.AddRecipeDto
+import de.malteans.recipes.dto.recipe.add.AddStepDto
 
 
 fun IngredientDto.toDomain(): RecipeIngredientItem {

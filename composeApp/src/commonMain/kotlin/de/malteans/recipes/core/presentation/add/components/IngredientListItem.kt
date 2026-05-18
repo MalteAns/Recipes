@@ -6,13 +6,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.malteans.recipes.core.domain.Ingredient
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun IngredientListItem(
@@ -45,10 +48,7 @@ fun IngredientListItem(
                 )
             }
             Spacer(modifier = Modifier.width(6.dp))
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(text = "${amount?.toNiceString() ?: ""} ${unit?: ""}")
             }
             Icon(
@@ -56,15 +56,27 @@ fun IngredientListItem(
                 contentDescription = "Edit",
             )
         }
+        var deleteClicked by remember { mutableStateOf(false) }
+        LaunchedEffect(deleteClicked) {
+            if (deleteClicked) {
+                delay(3.seconds)
+                deleteClicked = false
+            }
+        }
         Row(
             modifier = Modifier
-                .clickable { onDelete() }
-                .padding(vertical = 4.dp)
+                .clickable {
+                    if (deleteClicked) onDelete()
+                    else deleteClicked = true
+                }
+                .padding(4.dp)
         ) {
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Delete",
+                tint = if (deleteClicked) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurface,
             )
         }
     }

@@ -15,7 +15,7 @@ import de.malteans.recipes.core.presentation.main.MainViewModel
 import de.malteans.recipes.core.presentation.plan.PlanViewModel
 import de.malteans.recipes.core.presentation.search.SearchViewModel
 import org.koin.core.module.Module
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 expect val platformModule: Module
@@ -33,10 +33,10 @@ val sharedModule = module {
 
     single<RecipeRepository> { DefaultRecipeRepository(get(), get()) }
 
-    viewModel { MainViewModel(get()) }
-    viewModel { PlanViewModel(get()) }
-    viewModel { SearchViewModel(get()) }
-    viewModel { SelectedRecipeViewModel() }
-    viewModel { AddViewModel(get()) }
-    viewModel { DetailsViewModel(get()) }
+    viewModelOf(::MainViewModel)
+    viewModelOf(::PlanViewModel)
+    viewModelOf(::SearchViewModel)
+    viewModelOf(::SelectedRecipeViewModel)
+    viewModelOf(::AddViewModel)
+    viewModelOf(::DetailsViewModel)
 }

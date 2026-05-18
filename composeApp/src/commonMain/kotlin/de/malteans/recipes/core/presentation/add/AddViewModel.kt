@@ -2,14 +2,19 @@ package de.malteans.recipes.core.presentation.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.malteans.recipes.core.data.network.RemoteRecipeDataSource
 import de.malteans.recipes.core.domain.Recipe
 import de.malteans.recipes.core.domain.RecipeIngredientItem
 import de.malteans.recipes.core.domain.RecipeRepository
+import io.ktor.http.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class AddViewModel(
-    private val repository: RecipeRepository
+    private val repository: RecipeRepository,
+    private val remoteRecipeDataSource: RemoteRecipeDataSource,
 ) : ViewModel() {
 
     private val _allIngredients = repository
@@ -42,6 +47,7 @@ class AddViewModel(
             name = _state.value.name,
             description = _state.value.description,
             imageUrl = _state.value.imageUrl,
+            sourceUrl = _state.value.sourceUrl.ifBlank { null },
             ingredients = _state.value.ingredients.map { RecipeIngredientItem(it.key, it.value.first, it.value.second) },
             steps = _state.value.steps,
             servings = _state.value.servings,
@@ -63,7 +69,10 @@ class AddViewModel(
                     name = recipe.name,
                     description = recipe.description,
                     imageUrl = recipe.imageUrl,
-                    ingredients = recipe.ingredients.associate { it.ingredient to (it.amount to it.overrideUnit) },
+                    sourceUrl = recipe.sourceUrl ?: "",
+                    ingredients = recipe.ingredients.associate { ingredientItem ->
+                        ingredientItem.ingredient to (ingredientItem.amount to ingredientItem.overrideUnit)
+                    },
                     steps = recipe.steps,
                     workTime = recipe.workTime,
                     totalTime = recipe.totalTime,
@@ -91,6 +100,11 @@ class AddViewModel(
                     it.copy(imageUrl = action.imageUrl)
                 }
             }
+            is AddAction.OnSourceUrlChange -> {
+                _state.update {
+                    it.copy(sourceUrl = action.sourceUrl)
+                }
+            }
             is AddAction.OnIngredientCreate -> {
                 viewModelScope.launch {
                     repository.upsertIngredient(action.ingredient)
@@ -113,17 +127,22 @@ class AddViewModel(
                     )
                 }
             }
-            is AddAction.OnIngredientChange -> {
-                _state.update {
-                    val newIngredients = it.ingredients.toMutableMap()
-                    var ingredient = action.ingredient
+            is AddAction.OnSubmitIngredientDialog -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val ingredient = action.ingredient
                     if (ingredient.id == 0L) {
-                        ingredient = _allIngredients.value.first { it.name == ingredient.name }
+                        repository.upsertIngredient(
+                            ingredient.copy(unit = action.unit ?: "")
+                        )
                     }
-                    newIngredients[ingredient] = Pair(action.amount, action.overrideUnit)
-                    it.copy(
-                        ingredients = newIngredients
-                    )
+                    _state.update { state ->
+                        val newIngredients = state.ingredients.toMutableMap()
+                        newIngredients[ingredient] = Pair(action.amount, action.unit)
+                        state.copy(
+                            showIngredientDialog = false,
+                            ingredients = newIngredients,
+                        )
+                    }
                 }
             }
             is AddAction.OnIngredientRemove -> {
@@ -182,6 +201,29 @@ class AddViewModel(
                     it.copy(workTime = action.time)
                 }
             }
+            is AddAction.OnUploadImage -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _state.update { it.copy(imageUploadInProgress = true) }
+                    remoteRecipeDataSource.uploadImage(
+                        fileName = action.imageUploadData.filename,
+                        mimeType = ContentType.parse(action.imageUploadData.mimeType),
+                        imageBytes = action.imageUploadData.bytes,
+                    )
+                        .onSuccess { image ->
+                            _state.update { it.copy(
+                                imageUploadInProgress = false,
+                                imageUrl = image.publicUrl,
+                            ) }
+                        }
+                        .onFailure { error ->
+                            // TODO: Feedback error with snackbar
+                            _state.update { it.copy(
+                                imageUploadInProgress = false,
+                            ) }
+                        }
+                }
+            }
+
             is AddAction.OnTabSelect -> {
                 _state.update {
                     it.copy(selectedTabIndex = action.index)

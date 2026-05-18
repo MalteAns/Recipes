@@ -1,6 +1,7 @@
 package de.malteans.recipes.core.presentation.add
 
 import de.malteans.recipes.core.domain.Ingredient
+import de.malteans.recipes.core.presentation.add.components.PickedImageData
 
 sealed interface AddAction {
     data object OnRecipeAdd : AddAction
@@ -11,10 +12,11 @@ sealed interface AddAction {
     data class OnNameChange(val name: String) : AddAction
     data class OnDescriptionChange(val description: String) : AddAction
     data class OnImageUrlChange(val imageUrl: String) : AddAction
+    data class OnSourceUrlChange(val sourceUrl: String) : AddAction
     data class OnIngredientCreate(val ingredient: Ingredient) : AddAction
     data class OnIngredientAdd(val ingredient: Ingredient) : AddAction
     data class OnIngredientEdit(val ingredient: Ingredient) : AddAction
-    data class OnIngredientChange(val ingredient: Ingredient, val amount: Double?, val overrideUnit: String?) : AddAction
+    data class OnSubmitIngredientDialog(val ingredient: Ingredient, val amount: Double?, val unit: String?) : AddAction
     data class OnIngredientRemove(val ingredient: Ingredient) : AddAction
     data class OnStepAdd(val index: Int) : AddAction
     data class OnStepChange(val newValue: String, val index: Int) : AddAction
@@ -23,6 +25,7 @@ sealed interface AddAction {
     data class OnTotalTimeChange(val time: Int?) : AddAction
     data class OnServingsChange(val servings: Int?) : AddAction
     data class OnRatingChange(val rating: Int?) : AddAction
+    data class OnUploadImage(val imageUploadData: PickedImageData) : AddAction
 
     data class OnTabSelect(val index: Int) : AddAction
     data object OnIngredientDialogDismiss : AddAction

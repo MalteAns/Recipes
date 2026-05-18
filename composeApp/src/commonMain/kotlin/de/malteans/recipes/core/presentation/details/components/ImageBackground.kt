@@ -31,12 +31,18 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import de.malteans.recipes.core.data.network.ApiConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import recipes.composeapp.generated.resources.Res
 import recipes.composeapp.generated.resources.app_icon
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -55,8 +61,12 @@ fun ImageBackground(
 
     // Load the image asynchronously.
     var imageLoadResult by remember { mutableStateOf<Result<Painter>?>(null) }
+    val context = LocalPlatformContext.current
     val painter = rememberAsyncImagePainter(
-        model = imageUrl,
+        model = ImageRequest.Builder(context)
+            .data(imageUrl)
+            .httpHeaders(NetworkHeaders.Builder().set("Authorization", "Bearer ${ApiConfig.apiToken}").build())
+            .build(),
         onSuccess = {
             val size = it.painter.intrinsicSize
             imageIntrinsicSize = size
@@ -104,7 +114,7 @@ fun ImageBackground(
 
     // Startup animation: animate from 0f to the initial minSheetFraction over 800ms.
     LaunchedEffect(Unit) {
-        delay(300 - navigationProgress.toLong())
+        delay((300 - navigationProgress.toLong()).milliseconds)
         sheetHeightAnimatable.animateTo(
             targetValue = minSheetFraction,
             animationSpec = tween(durationMillis = 800, easing = EaseInOut)
@@ -132,7 +142,7 @@ fun ImageBackground(
         minSheetFraction = newMin
         // If the sheet is still at 0.85f (i.e. user hasn’t scrolled) and now an image is loaded, animate to 0.7f.
         if ((sheetHeightAnimatable.value == 0.85f) || !initialScrollFinished) {
-            delay(300 - navigationProgress.toLong())
+            delay((300 - navigationProgress.toLong()).milliseconds)
             sheetHeightAnimatable.animateTo(
                 targetValue = if (newMin < 0.7f) 0.7f else newMin,
                 animationSpec = tween(durationMillis = 800, easing = EaseOut)

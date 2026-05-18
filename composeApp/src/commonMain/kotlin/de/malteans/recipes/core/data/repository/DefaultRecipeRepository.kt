@@ -4,11 +4,7 @@ import de.malteans.recipes.core.data.database.RecipeDao
 import de.malteans.recipes.core.data.database.entities.PlanEntity
 import de.malteans.recipes.core.data.database.entities.RecipeIngredientEntity
 import de.malteans.recipes.core.data.database.entities.RecipeStepEntity
-import de.malteans.recipes.core.data.mappers.toDomain
-import de.malteans.recipes.core.data.mappers.toEntity
-import de.malteans.recipes.core.data.mappers.toIngredientEntity
-import de.malteans.recipes.core.data.mappers.toRecipeEntity
-import de.malteans.recipes.core.data.mappers.toAddRecipeDto
+import de.malteans.recipes.core.data.mappers.*
 import de.malteans.recipes.core.data.network.RemoteRecipeDataSource
 import de.malteans.recipes.core.domain.*
 import de.malteans.recipes.core.domain.errorHandling.DataError
@@ -86,14 +82,6 @@ class DefaultRecipeRepository(
     // New function: Save a cloud recipe by upserting it with fromCloud=true.
     override suspend fun saveCloudRecipe(recipe: Recipe): Long {
         return upsertRecipe(recipe, fromCloud = true)
-    }
-
-    override suspend fun uploadLocalRecipe(recipe: Recipe): Result<Long, DataError.Remote> {
-        return remoteDataSource.uploadRecipe(recipe.toAddRecipeDto())
-            .onSuccess { cloudId ->
-                val updatedRecipe = recipe.copy(cloudId = cloudId, cloudName = recipe.name)
-                dao.upsertRecipe(updatedRecipe.toRecipeEntity())
-            }
     }
 
     override suspend fun deleteRecipeById(id: Long) {

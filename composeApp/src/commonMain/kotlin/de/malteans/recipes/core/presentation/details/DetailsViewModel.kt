@@ -2,12 +2,18 @@ package de.malteans.recipes.core.presentation.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.malteans.recipes.core.data.network.HttpStatusException
 import de.malteans.recipes.core.domain.PlannedRecipe
 import de.malteans.recipes.core.domain.Recipe
 import de.malteans.recipes.core.domain.RecipeRepository
+import de.malteans.recipes.core.presentation.components.SnackbarManager
+import de.malteans.recipes.core.presentation.util.UiText
+import de.malteans.recipes.dto.recipe.add.AddRecipeResponseDto
+import io.ktor.http.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import recipes.composeapp.generated.resources.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DetailsViewModel(
@@ -88,7 +94,33 @@ class DetailsViewModel(
                 val recipe = state.value.recipe ?: return
                 viewModelScope.launch {
                     repository.uploadLocalRecipe(recipe)
-                    // TODO: Implement error handling
+                        .onSuccess {
+                            SnackbarManager.showSnackbar(
+                                UiText.Resource(Res.string.recipe_upload_success_toast)
+                            )
+                        }
+                        .onFailure { exception ->
+                            val snackbarMessage = when (exception) {
+                                is HttpStatusException ->
+                                    when (exception.statusCode) {
+                                        HttpStatusCode.Conflict -> {
+                                            UiText.Resource(
+                                                Res.string.recipe_upload_already_existing_toast,
+                                                (exception.data as? AddRecipeResponseDto.AddRecipeErrorDto)?.existingRecipeName ?: "Unknown",
+                                            )
+                                        }
+                                        else -> {
+                                            UiText.Resource(
+                                                Res.string.recipe_upload_http_error_toast,
+                                                exception.statusCode,
+                                            )
+                                        }
+                                    }
+
+                                else -> UiText.Resource(Res.string.recipe_upload_error_toast)
+                            }
+                            SnackbarManager.showSnackbar(snackbarMessage)
+                        }
                 }
             }
             is DetailsAction.ShowPlanDialog -> {

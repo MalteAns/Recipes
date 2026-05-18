@@ -1,7 +1,7 @@
 package de.malteans.recipes.services
 
-import de.malteans.recipes.dto.AddRecipeDto
-import de.malteans.recipes.dto.RecipeDto
+import de.malteans.recipes.dto.recipe.RecipeDto
+import de.malteans.recipes.dto.recipe.add.AddRecipeDto
 
 interface RecipeService {
 
@@ -11,7 +11,7 @@ interface RecipeService {
 
     suspend fun addRecipe(
         recipeDto: AddRecipeDto
-    ): Int
+    ): Result<Int>
 
     suspend fun updateRecipe(
         id: Int,
