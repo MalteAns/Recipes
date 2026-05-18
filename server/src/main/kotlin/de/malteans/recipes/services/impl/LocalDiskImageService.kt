@@ -7,9 +7,13 @@ import de.malteans.recipes.dto.image.ImagePresignReq
 import de.malteans.recipes.model.ImageMeta
 import de.malteans.recipes.model.Presign
 import de.malteans.recipes.services.ImageService
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
 import java.nio.file.Files
 import java.time.Instant

@@ -84,6 +84,14 @@ class DefaultRecipeRepository(
         return upsertRecipe(recipe, fromCloud = true)
     }
 
+    override suspend fun uploadLocalRecipe(recipe: Recipe): kotlin.Result<Long> {
+        return remoteDataSource.uploadRecipe(recipe.toAddRecipeDto())
+            .onSuccess { cloudId ->
+                val updatedRecipe = recipe.copy(cloudId = cloudId, cloudName = recipe.name)
+                dao.upsertRecipe(updatedRecipe.toRecipeEntity())
+            }
+    }
+
     override suspend fun deleteRecipeById(id: Long) {
         dao.deleteRecipe(id)
     }
@@ -174,8 +182,6 @@ class DefaultRecipeRepository(
             }
         return result
     }
-
-    // New functions for planning recipes:
 
     // Insert a new plan record for the given recipe and date.
     override suspend fun planRecipe(recipeId: Long, date: LocalDate, timeOfDay: TimeOfDay): Long {
