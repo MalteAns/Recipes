@@ -41,20 +41,20 @@ class AddViewModel(
         )
 
     suspend fun onRecipeAdd(): Long {
-        var recipe = _state.value.editingRecipe
-            ?: Recipe()
-        recipe = recipe.copy (
-            name = _state.value.name,
-            description = _state.value.description,
-            imageUrl = _state.value.imageUrl,
-            sourceUrl = _state.value.sourceUrl.ifBlank { null },
-            ingredients = _state.value.ingredients.map { RecipeIngredientItem(it.key, it.value.first, it.value.second) },
-            steps = _state.value.steps,
-            servings = _state.value.servings,
-            workTime = _state.value.workTime,
-            totalTime = _state.value.totalTime,
-            rating = _state.value.rating,
-        )
+        val recipe = with(_state.value) {
+            (editingRecipe ?: Recipe()).copy (
+                name = name,
+                description = description,
+                imageUrl = imageUrl,
+                sourceUrl = sourceUrl.ifBlank { null },
+                ingredients = ingredients.map { RecipeIngredientItem(it.key, it.value.first, it.value.second) },
+                steps = steps,
+                servings = servings,
+                workTime = workTime,
+                totalTime = totalTime,
+                rating = rating,
+            )
+        }
         return repository.upsertRecipe(recipe)
     }
 
@@ -129,11 +129,11 @@ class AddViewModel(
             }
             is AddAction.OnSubmitIngredientDialog -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    val ingredient = action.ingredient
+                    var ingredient = action.ingredient
                     if (ingredient.id == 0L) {
-                        repository.upsertIngredient(
-                            ingredient.copy(unit = action.unit ?: "")
-                        )
+                        ingredient = ingredient.copy(unit = action.unit ?: "")
+                        val id = repository.upsertIngredient(ingredient)
+                        ingredient = ingredient.copy(id = id)
                     }
                     _state.update { state ->
                         val newIngredients = state.ingredients.toMutableMap()
