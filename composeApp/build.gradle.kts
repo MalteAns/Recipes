@@ -22,6 +22,8 @@ private val apiToken: String = gradleLocalProperties(rootDir, rootProject.provid
     )
 
 val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
+    description = "Generates a BuildConfig file for the desktop target with the API token."
+
     notCompatibleWithConfigurationCache("Custom script writes file dynamically")
 
     val outputDir = layout.buildDirectory.dir("generated/buildConfig/desktopMain/kotlin")
@@ -76,7 +78,7 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
-            implementation(compose.preview)
+            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.koin.android)
@@ -87,16 +89,14 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.shared)
 
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended) // More Icons
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.androidx.lifecycle.runtime.compose)
+
+            // Compose + M3
+            implementation(libs.bundles.compose)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.extended) // More Icons
 
             // Koin (DI)
             implementation(libs.bundles.koin.client)
@@ -176,7 +176,7 @@ android {
 }
 
 dependencies {
-    debugImplementation(compose.uiTooling)
+    debugImplementation(libs.compose.ui.tooling)
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspDesktop", libs.androidx.room.compiler)
 }
