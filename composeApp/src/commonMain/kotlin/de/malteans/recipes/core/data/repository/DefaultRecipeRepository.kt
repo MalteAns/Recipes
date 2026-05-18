@@ -84,14 +84,6 @@ class DefaultRecipeRepository(
         return upsertRecipe(recipe, fromCloud = true)
     }
 
-    override suspend fun uploadLocalRecipe(recipe: Recipe): kotlin.Result<Long> {
-        return remoteDataSource.uploadRecipe(recipe.toAddRecipeDto())
-            .onSuccess { cloudId ->
-                val updatedRecipe = recipe.copy(cloudId = cloudId)
-                dao.upsertRecipe(updatedRecipe.toRecipeEntity())
-            }
-    }
-
     override suspend fun deleteRecipeById(id: Long) {
         dao.deleteRecipe(id)
     }

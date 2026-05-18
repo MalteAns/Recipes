@@ -1,7 +1,7 @@
 package de.malteans.recipes
 
 object Constants {
-    const val SERVER_PORT = 8082
+    const val SERVER_PORT = 8080
 //    const val PROTOCOL = "http"
     const val PROTOCOL = "https"
     const val SERVER_URL = "recipes.malteans.de"
