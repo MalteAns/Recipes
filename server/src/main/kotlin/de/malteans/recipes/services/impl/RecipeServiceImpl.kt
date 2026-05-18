@@ -3,16 +3,24 @@ package de.malteans.recipes.services.impl
 import de.malteans.recipes.db.IngredientsTable
 import de.malteans.recipes.db.RecipesTable
 import de.malteans.recipes.db.StepsTable
-import de.malteans.recipes.dto.IngredientDto
-import de.malteans.recipes.dto.RecipeDto
-import de.malteans.recipes.dto.StepDto
+import de.malteans.recipes.dto.recipe.IngredientDto
+import de.malteans.recipes.dto.recipe.RecipeDto
+import de.malteans.recipes.dto.recipe.StepDto
+import de.malteans.recipes.dto.recipe.add.AddRecipeDto
 import de.malteans.recipes.services.RecipeService
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.time.Instant
 
 class RecipeServiceImpl(
     private val db: Database,
 ): RecipeService {
+    companion object {
+        class RecipeAlreadyExistsException(val existingRecipeDto: RecipeDto)
+            : IllegalArgumentException("A recipe with the same source URL already exists: ${existingRecipeDto.name} (ID: ${existingRecipeDto.id})")
+    }
+
     override suspend fun getAllRecipes(query: String) = transaction(db) {
         val recipes = RecipesTable
             .selectAll()
@@ -44,6 +52,105 @@ class RecipeServiceImpl(
                 steps = steps[recipe.id.toInt()] ?: emptyList(),
             )
         }
+    }
+
+    override suspend fun addRecipe(recipeDto: AddRecipeDto): Result<Int> {
+        return transaction(db) {
+            if (!recipeDto.sourceUrl.isNullOrEmpty()) {
+                RecipesTable
+                    .selectAll()
+                    .where { RecipesTable.sourceUrl eq recipeDto.sourceUrl }
+                    .singleOrNull()
+                    ?.toRecipeDto()
+                    ?.let { existingRecipeDto ->
+                        return@transaction Result.failure(RecipeAlreadyExistsException(existingRecipeDto))
+                    }
+            }
+
+            val recipeId = (RecipesTable
+                .selectAll()
+                .maxByOrNull {
+                    it[RecipesTable.id]
+                }
+                ?.get(RecipesTable.id)
+                ?: 0) + 1
+
+            saveRecipeData(recipeId, recipeDto)
+            return@transaction Result.success(recipeId)
+        }
+    }
+
+    override suspend fun updateRecipe(id: Int, recipeDto: AddRecipeDto) {
+        transaction(db) {
+            saveRecipeData(id, recipeDto, isUpdate = true)
+        }
+    }
+
+    private fun saveRecipeData(recipeId: Int, recipeDto: AddRecipeDto, isUpdate: Boolean = false): Result<Int> {
+        if (isUpdate) {
+            RecipesTable.update({ RecipesTable.id eq recipeId }) { row ->
+                row[name] = recipeDto.name
+                row[description] = recipeDto.description
+                row[imageUrl] = recipeDto.imageUrl
+                row[workTime] = recipeDto.workTime
+                row[totalTime] = recipeDto.totalTime
+                row[servings] = recipeDto.servings
+                row[onlineRating] = recipeDto.onlineRating
+                row[sourceUrl] = recipeDto.sourceUrl
+            }.let { updatedRows ->
+                if (updatedRows == 0)
+                    return Result.failure(IllegalArgumentException("Recipe with id $recipeId not found"))
+            }
+            IngredientsTable.deleteWhere { IngredientsTable.recipeId eq recipeId }
+            StepsTable.deleteWhere { StepsTable.recipeId eq recipeId }
+        } else {
+            RecipesTable.insert { row ->
+                row[id] = recipeId
+                row[name] = recipeDto.name
+                row[description] = recipeDto.description
+                row[imageUrl] = recipeDto.imageUrl
+                row[workTime] = recipeDto.workTime
+                row[totalTime] = recipeDto.totalTime
+                row[servings] = recipeDto.servings
+                row[onlineRating] = recipeDto.onlineRating
+                row[sourceUrl] = recipeDto.sourceUrl
+                row[addedAt] = Instant.now()
+            }
+        }
+
+        recipeDto.ingredients.forEach { ingredient ->
+            val ingredientId = (IngredientsTable
+                .selectAll()
+                .maxByOrNull {
+                    it[IngredientsTable.id]
+                }
+                ?.get(IngredientsTable.id)
+                ?: 1) + 1
+            IngredientsTable.insert { row ->
+                row[id] = ingredientId
+                row[this.recipeId] = recipeId
+                row[ingredientName] = ingredient.name
+                row[ingredientAmount] = ingredient.amount
+                row[ingredientUnit] = ingredient.unit
+            }
+        }
+        recipeDto.steps.forEachIndexed { index, stepDto ->
+            val stepId = (StepsTable
+                .selectAll()
+                .maxByOrNull {
+                    it[StepsTable.id]
+                }
+                ?.get(StepsTable.id)
+                ?: 1) + 1
+            StepsTable.insert { row ->
+                row[id] = stepId
+                row[this.recipeId] = recipeId
+                row[stepNumber] = index + 1
+                row[description] = stepDto.description
+                row[duration] = stepDto.duration
+            }
+        }
+        return Result.success(recipeId)
     }
 
     private fun ResultRow.toRecipeDto(

@@ -1,5 +1,7 @@
 package de.malteans.recipes.core.domain
 
+import de.malteans.recipes.Endpoints
+
 data class Recipe(
     val id: Long = 0L,
     val cloudId: Long? = null,
@@ -22,4 +24,12 @@ data class Recipe(
     val cloudServings: Int? = null,
     val rating: Int? = null,
     val onlineRating: Double? = null,
-)
+) {
+    fun getUrl(): String {
+        return if (imageUrl.startsWith("appServer:")) {
+            Endpoints.RelativePath(
+                imageUrl.substring("appServer:".length)
+            ).url
+        } else imageUrl
+    }
+}

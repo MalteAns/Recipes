@@ -3,9 +3,8 @@ package de.malteans.recipes.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class IngredientDto(
-    val id: Long,
+data class AddIngredientDto(
     val name: String,
-    val amount: Double?,
-    val unit: String?,
+    val amount: Double? = null,
+    val unit: String? = null,
 )

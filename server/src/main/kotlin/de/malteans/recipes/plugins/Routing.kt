@@ -1,6 +1,5 @@
 package de.malteans.recipes.plugins
 
-import de.malteans.recipes.Constants
 import de.malteans.recipes.routes.registerImageRoutes
 import de.malteans.recipes.routes.registerRecipeRoutes
 import de.malteans.recipes.services.ImageService
@@ -20,10 +19,10 @@ fun Application.configureRouting(
     val recipeService by inject<RecipeService>()
     val imageService by inject<ImageService>()
     routing {
-        staticFiles("/uploads", File("serverUploads"))
-        route("/${Constants.API_VERSION}") {
+        route("/v2") {
             get("/health") { call.respond(mapOf("status" to "ok")) }
             authenticate("bearer") {
+                staticFiles("/uploads", File("serverUploads"))
                 registerRecipeRoutes(
                     recipeService = recipeService
                 )

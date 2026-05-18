@@ -4,10 +4,7 @@ import de.malteans.recipes.core.data.database.RecipeDao
 import de.malteans.recipes.core.data.database.entities.PlanEntity
 import de.malteans.recipes.core.data.database.entities.RecipeIngredientEntity
 import de.malteans.recipes.core.data.database.entities.RecipeStepEntity
-import de.malteans.recipes.core.data.mappers.toDomain
-import de.malteans.recipes.core.data.mappers.toEntity
-import de.malteans.recipes.core.data.mappers.toIngredientEntity
-import de.malteans.recipes.core.data.mappers.toRecipeEntity
+import de.malteans.recipes.core.data.mappers.*
 import de.malteans.recipes.core.data.network.RemoteRecipeDataSource
 import de.malteans.recipes.core.domain.*
 import de.malteans.recipes.core.domain.errorHandling.DataError
@@ -87,6 +84,14 @@ class DefaultRecipeRepository(
         return upsertRecipe(recipe, fromCloud = true)
     }
 
+    override suspend fun uploadLocalRecipe(recipe: Recipe): kotlin.Result<Long> {
+        return remoteDataSource.uploadRecipe(recipe.toAddRecipeDto())
+            .onSuccess { cloudId ->
+                val updatedRecipe = recipe.copy(cloudId = cloudId, cloudName = recipe.name)
+                dao.upsertRecipe(updatedRecipe.toRecipeEntity())
+            }
+    }
+
     override suspend fun deleteRecipeById(id: Long) {
         dao.deleteRecipe(id)
     }
@@ -108,7 +113,7 @@ class DefaultRecipeRepository(
     }
 
     override fun getRecipeById(id: Long): Flow<Recipe> {
-        return dao.getRecipeWithDetails(id).map { it.toDomain() }
+        return dao.getRecipeWithDetails(id).mapNotNull { it?.toDomain() }
     }
 
     override suspend fun upsertIngredient(ingredient: Ingredient): Long {
@@ -177,8 +182,6 @@ class DefaultRecipeRepository(
             }
         return result
     }
-
-    // New functions for planning recipes:
 
     // Insert a new plan record for the given recipe and date.
     override suspend fun planRecipe(recipeId: Long, date: LocalDate, timeOfDay: TimeOfDay): Long {

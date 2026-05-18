@@ -11,14 +11,14 @@ import androidx.compose.ui.text.input.ImeAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchableDropdown(
+fun <T> SearchableDropdown(
     label: @Composable (() -> Unit)? = null,
-    selectedOption: Pair<Any, String>,
-    options: Map<Any, String>,
-    onValueChanged: (Any) -> Unit,
+    selectedOption: Pair<T?, String>,
+    options: Map<T, String>,
+    onValueChanged: (T) -> Unit,
     onValueAdded: ((String) -> Unit)? = null,
     enabled: Boolean = true,
-    optionIcon: @Composable ((Any) -> Unit)? = null,
+    optionIcon: @Composable ((T?) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -35,20 +35,16 @@ fun SearchableDropdown(
         modifier = modifier
     ) {
         OutlinedTextField(
+            value = if (expanded) currentInput else selectedOption.second,
             enabled = enabled,
             readOnly = !expanded,
-            value = if (expanded) currentInput else selectedOption.second,
+            singleLine = true,
             onValueChange = {
                 currentInput = it
             },
-            leadingIcon = if (optionIcon != null) { { optionIcon(selectedOption.first) } }
-            else null,
             label = label,
+            leadingIcon = optionIcon?.let { { optionIcon(selectedOption.first) } },
             colors = OutlinedTextFieldDefaults.colors(),
-            modifier = Modifier
-                .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = enabled)
-                .fillMaxWidth(),
-            singleLine = true,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
             ),
@@ -56,7 +52,7 @@ fun SearchableDropdown(
                 onDone = {
                     expanded = false
                     focusManager.clearFocus()
-                    val option = options.entries.find { it.value.lowercase() == currentInput.lowercase() }?.key
+                    val option = options.entries.find { it.value.equals(currentInput, ignoreCase = true) }?.key
                     if (currentInput.isNotBlank()) {
                         if (option == null) {
                             onValueAdded?.invoke(currentInput)
@@ -66,6 +62,9 @@ fun SearchableDropdown(
                     }
                 }
             ),
+            modifier = Modifier
+                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryEditable, enabled = enabled)
+                .fillMaxWidth(),
         )
 
         ExposedDropdownMenu(
