@@ -32,6 +32,7 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
     outputs.file(outputFile)
 
     doLast {
+        val safeToken = apiToken.removeSurrounding("\"")
         val file = outputFile.get().asFile
         file.parentFile.mkdirs()
         file.writeText(
@@ -39,7 +40,7 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
             package de.malteans.recipes.core.data.network
 
             object DesktopBuildConfig {
-                const val API_TOKEN = $apiToken
+                const val API_TOKEN = "$safeToken"
             }
             """.trimIndent()
         )
@@ -153,7 +154,9 @@ android {
         versionCode = libs.versions.projectVersionCode.get().toInt()
         versionName = libs.versions.projectVersionName.get()
         versionNameSuffix = libs.versions.projectVersionNameSuffix.get()
-        buildConfigField("String", "API_TOKEN", apiToken)
+
+        val safeToken = apiToken.removeSurrounding("\"")
+        buildConfigField("String", "API_TOKEN", "\"$safeToken\"")
     }
     packaging {
         resources {
