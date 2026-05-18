@@ -19,6 +19,7 @@ interface RecipeRepository {
 
     suspend fun fetchCloudRecipes(query: String): Flow<Result<List<Recipe>, DataError.Remote>>
     suspend fun saveCloudRecipe(recipe: Recipe): Long  // New function for cloud recipes
+    suspend fun uploadLocalRecipe(recipe: Recipe): Result<Long, DataError.Remote>
 
     suspend fun planRecipe(recipeId: Long, date: LocalDate, timeOfDay: TimeOfDay): Long
     suspend fun planRecipe(plannedRecipe: PlannedRecipe): Long

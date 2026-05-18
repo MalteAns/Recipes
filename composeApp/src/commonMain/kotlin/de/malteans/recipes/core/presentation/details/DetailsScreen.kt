@@ -41,6 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import recipes.composeapp.generated.resources.*
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun DetailsScreenRoot(
@@ -258,7 +259,7 @@ fun DetailsScreen(
                 val deleteClicked = remember { mutableStateOf(false) }
                 LaunchedEffect(deleteClicked.value) {
                     if (deleteClicked.value) {
-                        delay(3000)
+                        delay(3.seconds)
                         deleteClicked.value = false
                     }
                 }
@@ -319,10 +320,10 @@ fun DetailsScreen(
         ) {
             state.recipe?.let { recipe ->
                 Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp, horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(vertical = 4.dp, horizontal = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier
@@ -345,12 +346,12 @@ fun DetailsScreen(
                         }
                     }
                     Column(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
                     ) {
-                        if (recipe.sourceUrl != null && recipe.sourceUrl.isNotBlank() && recipe.sourceUrl.startsWith("https://")) {
+                        if (!recipe.sourceUrl.isNullOrBlank() && recipe.sourceUrl.startsWith("https://")) {
                             Icon(
                                 imageVector = CustomOpenInBrowserIcon,
                                 contentDescription = "Open Source",
@@ -391,6 +392,16 @@ fun DetailsScreen(
                                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                                 modifier = Modifier
                                     .clickable { onAction(DetailsAction.ShowPlanDialog) }
+                                    .size(28.dp)
+                            )
+                        }
+                        if (recipe.isLocalOnly()) {
+                            Icon(
+                                imageVector = Icons.Default.CloudUpload,
+                                contentDescription = "Upload Recipe",
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                modifier = Modifier
+                                    .clickable { onAction(DetailsAction.OnUpload) }
                                     .size(28.dp)
                             )
                         }
