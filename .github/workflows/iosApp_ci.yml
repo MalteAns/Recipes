@@ -1,4 +1,4 @@
-name: Server CI-Pipeline
+name: IosApp CI-Pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -27,10 +27,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew clean :shared:build :server:build
+      - name: Build iOS App
+        run: xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -configuration Debug CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
         env:
           API_TOKEN: ${{ secrets.API_TOKEN }}
 
-#      - name: Run Unit Tests
-#        run: ./gradlew test

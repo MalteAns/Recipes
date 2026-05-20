@@ -17,13 +17,14 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 class KtorRemoteRecipeDataSource(
+    private val apiConfig: ApiConfig,
     private val client: HttpClient,
 ) : RemoteRecipeDataSource {
 
     override suspend fun fetchRecipes(query: String): Result<List<RecipeDto>, DataError.Remote> {
         return oldSafeCall<RecipesResponseDto> {
             client.get(Endpoints.Recipes.GetAll.url) {
-                header("Authorization", "Bearer ${ApiConfig.apiToken}")
+                header("Authorization", "Bearer ${apiConfig.apiToken}")
                 parameter("query", query)
             }
         }.map { it.recipes }
@@ -32,7 +33,7 @@ class KtorRemoteRecipeDataSource(
     override suspend fun uploadRecipe(recipeDto: AddRecipeDto): kotlin.Result<Long> {
         return safeCall<AddRecipeResponseDto> {
             client.post(Endpoints.Recipes.Add.url) {
-                header("Authorization", "Bearer ${ApiConfig.apiToken}")
+                header("Authorization", "Bearer ${apiConfig.apiToken}")
                 contentType(ContentType.Application.Json)
                 setBody(recipeDto)
             }
@@ -49,7 +50,7 @@ class KtorRemoteRecipeDataSource(
     ): kotlin.Result<Image> {
         val presignResp = safeCall<PresignResp> {
             client.post(Endpoints.Images.Presign.url) {
-                header("Authorization", "Bearer ${ApiConfig.apiToken}")
+                header("Authorization", "Bearer ${apiConfig.apiToken}")
                 contentType(ContentType.Application.Json)
                 setBody(
                     ImagePresignReq(
@@ -62,14 +63,14 @@ class KtorRemoteRecipeDataSource(
         }.getOrElse { return kotlin.Result.failure(it) }
         safeCall<Unit> {
             client.put(presignResp.putUrl) {
-                header("Authorization", "Bearer ${ApiConfig.apiToken}")
+                header("Authorization", "Bearer ${apiConfig.apiToken}")
                 contentType(mimeType)
                 setBody(imageBytes)
             }
         }.onFailure { return kotlin.Result.failure(it) }
         val finalizeResp = safeCall<FinalizeResp> {
             client.post(Endpoints.Images.Finalize(presignResp.id).url) {
-                header("Authorization", "Bearer ${ApiConfig.apiToken}")
+                header("Authorization", "Bearer ${apiConfig.apiToken}")
             }
         }.getOrElse { return kotlin.Result.failure(it) }
         return kotlin.Result.success(
@@ -89,7 +90,7 @@ class KtorRemoteRecipeDataSource(
         imageId: String
     ) = safeCall<Unit> {
         client.delete(Endpoints.Images.Get(imageId).url) {
-            header("Authorization", "Bearer ${ApiConfig.apiToken}")
+            header("Authorization", "Bearer ${apiConfig.apiToken}")
         }
     }
 }

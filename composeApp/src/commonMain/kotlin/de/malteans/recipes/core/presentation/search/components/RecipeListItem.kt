@@ -34,6 +34,7 @@ import de.malteans.recipes.core.presentation.components.RatingBar
 import de.malteans.recipes.core.presentation.details.components.CustomClockIcon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import recipes.composeapp.generated.resources.Res
 import recipes.composeapp.generated.resources.min
 import recipes.composeapp.generated.resources.recipe_img_2
@@ -47,6 +48,8 @@ fun RecipeListItem(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val apiConfig = koinInject<ApiConfig>() // TODO: There might be a better way
+
     Surface(
         shape = RoundedCornerShape(32.dp),
         modifier = modifier
@@ -78,7 +81,7 @@ fun RecipeListItem(
                 val painter = rememberAsyncImagePainter(
                     model = ImageRequest.Builder(context)
                         .data(recipe.getUrl())
-                        .httpHeaders(NetworkHeaders.Builder().set("Authorization", "Bearer ${ApiConfig.apiToken}").build())
+                        .httpHeaders(NetworkHeaders.Builder().set("Authorization", "Bearer ${apiConfig.apiToken}").build())
                         .build(),
                     onSuccess = {
                         imageLoadResult =
@@ -177,7 +180,7 @@ fun RecipeListItem(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = recipe.ingredients.joinToString(", ") { recipeIngredientItem ->
-                            var result = recipeIngredientItem.ingredient.name.split(",")[0].split("(")[0]
+                            val result = recipeIngredientItem.ingredient.name.split(",")[0].split("(")[0]
                                 .ifBlank { recipeIngredientItem.ingredient.name }
                             // Return first uppercase word, if any, otherwise return the whole string
                             return@joinToString result.split(" ").firstOrNull { it.isNotBlank() && it[0].isUpperCase() }

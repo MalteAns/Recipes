@@ -1,4 +1,4 @@
-name: ComposeApp CI-Pipeline
+name: AndroidApp CI-Pipeline
 
 on:
   push:
@@ -27,14 +27,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-#      - name: Verify aboutlibraries.json is up to date
-#        run: |
-#          ./gradlew :composeApp:exportLibraryDefinitions
-#          git diff --exit-code -- composeApp/src/commonMain/resources/aboutlibraries.json || \
-#            (echo "❌ aboutlibraries.json outdated. Run './gradlew :composeApp:exportLibraryDefinitions' locally and commit." && exit 1)
-
       - name: Build with Gradle
-        run: ./gradlew clean :shared:build :composeApp:build
+        run: ./gradlew clean :androidApp:build
         env:
           API_TOKEN: ${{ secrets.API_TOKEN }}
 

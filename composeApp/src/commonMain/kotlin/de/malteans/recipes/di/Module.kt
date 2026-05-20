@@ -29,7 +29,7 @@ val sharedModule = module {
             .build()
     }
     single { get<RecipeDatabase>().recipeDao }
-    single<RemoteRecipeDataSource> { KtorRemoteRecipeDataSource(get()) }
+    single<RemoteRecipeDataSource> { KtorRemoteRecipeDataSource(get(), get()) }
 
     single<RecipeRepository> { DefaultRecipeRepository(get(), get()) }
 

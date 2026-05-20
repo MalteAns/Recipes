@@ -1,5 +1,5 @@
 package de.malteans.recipes.core.data.network
 
-expect object ApiConfig {
+data class ApiConfig (
     val apiToken: String
-}
+)

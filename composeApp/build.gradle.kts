@@ -1,12 +1,11 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.hotReload)
 
     alias(libs.plugins.jetbrains.kotlin.serialization)
@@ -50,9 +49,13 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
 }
 
 kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+    androidLibrary {
+        namespace = "de.malteans.recipes.composeApp"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        withJava()
+        androidResources {
+            enable = true
         }
     }
 
@@ -141,42 +144,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "de.malteans.recipes"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    buildFeatures.buildConfig = true
-
-    defaultConfig {
-        applicationId = libs.versions.applicationId.get()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = libs.versions.projectVersionCode.get().toInt()
-        versionName = libs.versions.projectVersionName.get()
-        versionNameSuffix = libs.versions.projectVersionNameSuffix.get()
-
-        val safeToken = apiToken.removeSurrounding("\"")
-        buildConfigField("String", "API_TOKEN", "\"$safeToken\"")
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-}
 
 dependencies {
-    debugImplementation(libs.compose.ui.tooling)
+    // using add since androidRuntimeClasspath isn't always type-safe accessorized properly yet, actually let's just do `add("androidRuntimeClasspath", ...)` or `androidRuntimeClasspath(...)`
+    add("androidRuntimeClasspath", libs.compose.ui.tooling)
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspDesktop", libs.androidx.room.compiler)
 }

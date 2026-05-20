@@ -40,6 +40,7 @@ import de.malteans.recipes.core.data.network.ApiConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import recipes.composeapp.generated.resources.Res
 import recipes.composeapp.generated.resources.app_icon
 import kotlin.time.Duration.Companion.milliseconds
@@ -53,6 +54,8 @@ fun ImageBackground(
     modifier: Modifier = Modifier,
     content: @Composable (Boolean, Float) -> Unit
 ) {
+    val apiConfig = koinInject<ApiConfig>() // TODO: There might be a better way
+
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
 
@@ -65,7 +68,7 @@ fun ImageBackground(
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(context)
             .data(imageUrl)
-            .httpHeaders(NetworkHeaders.Builder().set("Authorization", "Bearer ${ApiConfig.apiToken}").build())
+            .httpHeaders(NetworkHeaders.Builder().set("Authorization", "Bearer ${apiConfig.apiToken}").build())
             .build(),
         onSuccess = {
             val size = it.painter.intrinsicSize
