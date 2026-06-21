@@ -63,21 +63,21 @@ fun PlannedDayItem(
     ) {
         val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp, 8.dp, cornerRadius.value, cornerRadius.value))
                 .fillMaxWidth()
                 .background(
                     color = if (data.date < currentDate)
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
-                        else if (data.date == currentDate)
-                            MaterialTheme.colorScheme.tertiaryContainer
-                        else
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                    else if (data.date == currentDate)
+                        MaterialTheme.colorScheme.tertiaryContainer
+                    else
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                 )
                 .clickable { onExpand(!data.isExpanded) }
-                .padding(20.dp, 8.dp, 16.dp, 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp, 8.dp, 16.dp, 8.dp)
         ) {
             Text(
                 text = data.date.asString(),
