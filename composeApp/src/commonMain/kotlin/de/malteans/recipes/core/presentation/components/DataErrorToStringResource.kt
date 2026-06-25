@@ -1,6 +1,11 @@
 package de.malteans.recipes.core.presentation.components
 
+import de.malteans.recipes.core.data.network.HttpStatusException
 import de.malteans.recipes.core.domain.errorHandling.DataError
+import io.ktor.client.call.*
+import io.ktor.client.network.sockets.*
+import io.ktor.http.*
+import io.ktor.util.network.*
 import recipes.composeapp.generated.resources.*
 
 fun DataError.toUiText(): UiText {
@@ -17,3 +22,18 @@ fun DataError.toUiText(): UiText {
     
     return UiText.FromStringResource(stringRes)
 }
+
+fun Throwable.toUiText(): UiText = UiText.FromStringResource(
+    when (this) {
+        is HttpStatusException -> when (statusCode.value) {
+            HttpStatusCode.RequestTimeout.value -> Res.string.error_request_timeout
+            HttpStatusCode.TooManyRequests.value -> Res.string.error_too_many_requests
+            in 500..599 -> Res.string.server_error
+            else -> Res.string.error_unknown
+        }
+        is SocketTimeoutException -> Res.string.error_request_timeout
+        is UnresolvedAddressException -> Res.string.error_no_internet
+        is NoTransformationFoundException -> Res.string.error_serialization
+        else -> Res.string.error_unknown
+    }
+)

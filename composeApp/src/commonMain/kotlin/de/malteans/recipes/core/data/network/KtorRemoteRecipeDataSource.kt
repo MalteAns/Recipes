@@ -1,9 +1,7 @@
 package de.malteans.recipes.core.data.network
 
 import de.malteans.recipes.Endpoints
-import de.malteans.recipes.core.domain.errorHandling.DataError
-import de.malteans.recipes.core.domain.errorHandling.Result
-import de.malteans.recipes.core.domain.errorHandling.map
+import de.malteans.recipes.core.data.AnsLog
 import de.malteans.recipes.dto.image.FinalizeResp
 import de.malteans.recipes.dto.image.ImagePresignReq
 import de.malteans.recipes.dto.image.PresignResp
@@ -21,13 +19,21 @@ class KtorRemoteRecipeDataSource(
     private val client: HttpClient,
 ) : RemoteRecipeDataSource {
 
-    override suspend fun fetchRecipes(query: String): Result<List<RecipeDto>, DataError.Remote> {
-        return oldSafeCall<RecipesResponseDto> {
+    companion object {
+        const val TAG = "KtorRemoteRecipeDataSource"
+    }
+
+    override suspend fun fetchRecipes(query: String): kotlin.Result<List<RecipeDto>> {
+        return safeCall<RecipesResponseDto> {
             client.get(Endpoints.Recipes.GetAll.url) {
                 header("Authorization", "Bearer ${apiConfig.apiToken}")
                 parameter("query", query)
             }
-        }.map { it.recipes }
+        }
+            .map {
+                AnsLog.d(TAG, "Mapping result to results")
+                it.recipes
+            }
     }
 
     override suspend fun uploadRecipe(recipeDto: AddRecipeDto): kotlin.Result<Long> {

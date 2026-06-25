@@ -8,6 +8,7 @@
     <string name="cloud_recipes">Cloud Rezepte</string>
     <string name="no_local_recipes">Noch keine lokalen Rezepte vorhanden.</string>
     <string name="error_disk_full">Hoppla, anscheinend ist dein Speicherplatz voll.</string>
+    <string name="server_error">Hoppla, etwas ist bei dem Server schiefgelaufen.</string>
     <string name="error_unknown">Hoppla, etwas ist schiefgelaufen.</string>
     <string name="error_request_timeout">Die Anfrage hat die Zeitüberschreitung erreicht.</string>
     <string name="error_no_internet">Server nicht erreichbar, bitte überprüfe deine Internetverbindung.</string>

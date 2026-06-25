@@ -1,7 +1,5 @@
 package de.malteans.recipes.core.domain
 
-import de.malteans.recipes.core.domain.errorHandling.DataError
-import de.malteans.recipes.core.domain.errorHandling.Result
 import de.malteans.recipes.core.presentation.plan.components.TimeOfDay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
@@ -17,7 +15,7 @@ interface RecipeRepository {
     suspend fun deleteIngredientById(id: Long)
     fun getAllIngredients(): Flow<List<Ingredient>>
 
-    suspend fun fetchCloudRecipes(query: String): Flow<Result<List<Recipe>, DataError.Remote>>
+    suspend fun fetchCloudRecipes(query: String): Flow<kotlin.Result<List<Recipe>>>
     suspend fun saveCloudRecipe(recipe: Recipe): Long  // New function for cloud recipes
     suspend fun uploadLocalRecipe(recipe: Recipe): kotlin.Result<Long>
 

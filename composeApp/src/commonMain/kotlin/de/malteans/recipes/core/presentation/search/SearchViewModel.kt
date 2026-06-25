@@ -4,10 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.malteans.recipes.core.domain.Recipe
 import de.malteans.recipes.core.domain.RecipeRepository
-import de.malteans.recipes.core.domain.errorHandling.DataError
-import de.malteans.recipes.core.domain.errorHandling.Result
-import de.malteans.recipes.core.domain.errorHandling.onError
-import de.malteans.recipes.core.domain.errorHandling.onSuccess
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
@@ -42,7 +38,7 @@ class SearchViewModel(
 
     private val _forceRefreshCloud = MutableStateFlow(false)
 
-    private val _cloudRecipesResult: Flow<Result<List<Recipe>, DataError.Remote>?> = combine(
+    private val _cloudRecipesResult: Flow<kotlin.Result<List<Recipe>>?> = combine(
         _forceRefreshCloud,
         _searchQuery,
         _selectedTabIndex,
@@ -81,7 +77,7 @@ class SearchViewModel(
                     cloudError = null
                 )
             }
-            ?.onError { error ->
+            ?.onFailure { error ->
                 result = result.copy(
                     cloudRecipes = emptyList(),
                     cloudError = error

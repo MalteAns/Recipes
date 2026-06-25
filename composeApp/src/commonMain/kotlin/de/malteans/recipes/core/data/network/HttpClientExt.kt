@@ -1,5 +1,6 @@
 package de.malteans.recipes.core.data.network
 
+import de.malteans.recipes.core.data.AnsLog
 import de.malteans.recipes.core.domain.errorHandling.DataError
 import de.malteans.recipes.core.domain.errorHandling.Result
 import io.ktor.client.call.*
@@ -53,9 +54,11 @@ suspend inline fun <reified T> safeCall(
     val response = try {
         execute()
     } catch (e: Exception) {
-        currentCoroutineContext().ensureActive()
+        AnsLog.e("safeCall", "Exception occurred during request execution: ${e.message}", e)
+//        currentCoroutineContext().ensureActive()
         return kotlin.Result.failure(e)
     }
+    AnsLog.d("safeCall", "Finished executing request. Processing response...")
     return responseToResult(response)
 }
 
