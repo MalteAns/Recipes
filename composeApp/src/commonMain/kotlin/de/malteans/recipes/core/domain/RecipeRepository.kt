@@ -15,7 +15,7 @@ interface RecipeRepository {
     suspend fun deleteIngredientById(id: Long)
     fun getAllIngredients(): Flow<List<Ingredient>>
 
-    suspend fun fetchCloudRecipes(query: String): Flow<kotlin.Result<List<Recipe>>>
+    fun fetchCloudRecipes(query: String): Flow<kotlin.Result<List<Recipe>>>
     suspend fun saveCloudRecipe(recipe: Recipe): Long  // New function for cloud recipes
     suspend fun uploadLocalRecipe(recipe: Recipe): kotlin.Result<Long>
 

@@ -55,7 +55,6 @@ suspend inline fun <reified T> safeCall(
         execute()
     } catch (e: Exception) {
         AnsLog.e("safeCall", "Exception occurred during request execution: ${e.message}", e)
-//        currentCoroutineContext().ensureActive()
         return kotlin.Result.failure(e)
     }
     AnsLog.d("safeCall", "Finished executing request. Processing response...")

@@ -9,6 +9,7 @@ import de.malteans.recipes.core.data.mappers.*
 import de.malteans.recipes.core.data.network.RemoteRecipeDataSource
 import de.malteans.recipes.core.domain.*
 import de.malteans.recipes.core.presentation.plan.components.TimeOfDay
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.LocalDate
@@ -133,55 +134,64 @@ class DefaultRecipeRepository(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun fetchCloudRecipes(query: String): Flow<kotlin.Result<List<Recipe>>> {
-        val result = remoteDataSource.fetchRecipes(query)
-
-        return if (result.isFailure) {
-            AnsLog.e(TAG, "Error fetching cloud recipes:", result.exceptionOrNull())
-            flowOf(kotlin.Result.failure(result.exceptionOrNull() ?: Exception("Unknown error fetching cloud recipes")))
-        } else {
-            AnsLog.d(TAG, "Successfully fetched cloud recipes. Processing and combining with local recipes.")
-            val cloudOnlyRecipes = result.getOrNull()!!.map { dto -> dto.toDomain() }
-            dao.getAllRecipesWithDetails()
-                .map { list ->
-                    list.associate {
-                        it.recipe.cloudId to it.toDomain()
-                    }
-                }
-                .flatMapLatest { allLocalRecipes ->
-                    flowOf(kotlin.Result.success(
-                    cloudOnlyRecipes
-                        .map { cloudRecipe ->
-                            val localRecipe = allLocalRecipes[cloudRecipe.cloudId]
-                            if (localRecipe != null) {
-                                Recipe(
-                                    id = localRecipe.id,
-                                    cloudId = cloudRecipe.cloudId,
-                                    sourceUrl = cloudRecipe.sourceUrl,
-                                    name = localRecipe.name,
-                                    cloudName = cloudRecipe.cloudName,
-                                    description = localRecipe.description,
-                                    cloudDescription = cloudRecipe.cloudDescription,
-                                    imageUrl = localRecipe.imageUrl,
-                                    cloudImageUrl = cloudRecipe.cloudImageUrl,
-                                    ingredients = localRecipe.ingredients,
-                                    cloudIngredients = cloudRecipe.cloudIngredients,
-                                    steps = localRecipe.steps,
-                                    cloudSteps = cloudRecipe.cloudSteps,
-                                    workTime = localRecipe.workTime,
-                                    cloudWorkTime = cloudRecipe.cloudWorkTime,
-                                    totalTime = localRecipe.totalTime,
-                                    cloudTotalTime = cloudRecipe.cloudTotalTime,
-                                    servings = localRecipe.servings,
-                                    cloudServings = cloudRecipe.cloudServings,
-                                    rating = localRecipe.rating,
-                                    onlineRating = cloudRecipe.onlineRating,
-                                )
+    override fun fetchCloudRecipes(query: String): Flow<kotlin.Result<List<Recipe>>> {
+        return flow {
+            try {
+                val result = remoteDataSource.fetchRecipes(query)
+                if (result.isFailure) {
+                    AnsLog.e(TAG, "Error fetching cloud recipes:", result.exceptionOrNull())
+                    emit(kotlin.Result.failure(result.exceptionOrNull() ?: Exception("Unknown error fetching cloud recipes")))
+                } else {
+                    AnsLog.d(TAG, "Successfully fetched cloud recipes. Processing and combining with local recipes.")
+                    val cloudOnlyRecipes = result.getOrNull()!!.map { dto -> dto.toDomain() }
+                    emitAll(
+                        dao.getAllRecipesWithDetails()
+                            .map { list ->
+                                list.associate {
+                                    it.recipe.cloudId to it.toDomain()
+                                }
                             }
-                            else cloudRecipe
-                        }
-                    ))
+                            .flatMapLatest { allLocalRecipes ->
+                                flowOf(kotlin.Result.success(
+                                    cloudOnlyRecipes
+                                        .map { cloudRecipe ->
+                                            val localRecipe = allLocalRecipes[cloudRecipe.cloudId]
+                                            if (localRecipe != null) {
+                                                Recipe(
+                                                    id = localRecipe.id,
+                                                    cloudId = cloudRecipe.cloudId,
+                                                    sourceUrl = cloudRecipe.sourceUrl,
+                                                    name = localRecipe.name,
+                                                    cloudName = cloudRecipe.cloudName,
+                                                    description = localRecipe.description,
+                                                    cloudDescription = cloudRecipe.cloudDescription,
+                                                    imageUrl = localRecipe.imageUrl,
+                                                    cloudImageUrl = cloudRecipe.cloudImageUrl,
+                                                    ingredients = localRecipe.ingredients,
+                                                    cloudIngredients = cloudRecipe.cloudIngredients,
+                                                    steps = localRecipe.steps,
+                                                    cloudSteps = cloudRecipe.cloudSteps,
+                                                    workTime = localRecipe.workTime,
+                                                    cloudWorkTime = cloudRecipe.cloudWorkTime,
+                                                    totalTime = localRecipe.totalTime,
+                                                    cloudTotalTime = cloudRecipe.cloudTotalTime,
+                                                    servings = localRecipe.servings,
+                                                    cloudServings = cloudRecipe.cloudServings,
+                                                    rating = localRecipe.rating,
+                                                    onlineRating = cloudRecipe.onlineRating,
+                                                )
+                                            }
+                                            else cloudRecipe
+                                        }
+                                ))
+                            }
+                    )
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                // Flow was cancelled (e.g., user switched tabs), stop gracefully
+                AnsLog.d(TAG, "Cloud recipes fetch cancelled")
+                return@flow
+            }
         }
     }
 
