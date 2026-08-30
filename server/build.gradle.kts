@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.ktor)
     application
 
-    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 group = "de.malteans.recipes"

@@ -2,13 +2,13 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
-    alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidMultiplatformLibrary)
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.compose.hotReload)
 
-    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
@@ -49,7 +49,7 @@ val generateDesktopBuildConfig = tasks.register("generateDesktopBuildConfig") {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "de.malteans.recipes.composeApp"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -99,7 +99,7 @@ kotlin {
             // Compose + M3
             implementation(libs.bundles.compose)
             implementation(libs.compose.material3)
-            implementation(libs.compose.material.icons.extended) // More Icons
+            implementation(libs.compose.materialIconsExtended) // More Icons
 
             // Koin (DI)
             implementation(libs.bundles.koin.client)
