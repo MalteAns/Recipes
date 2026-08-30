@@ -1,11 +1,11 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.androidApplication)
 //    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.composeCompiler)
 
-    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 private val apiToken: String = gradleLocalProperties(rootDir, rootProject.providers)

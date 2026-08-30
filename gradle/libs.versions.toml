@@ -1,9 +1,9 @@
 [versions]
-agp = "9.0.1"
+agp = "9.3.2"
 
-android-compileSdk = "36"
+android-compileSdk = "37"
 android-minSdk = "30"
-android-targetSdk = "36"
+android-targetSdk = "37"
 
 applicationId = "de.malteans.recipes"
 applicationName = "Recipes"
@@ -15,26 +15,26 @@ androidx-activity = "1.13.0"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
 androidx-espresso = "3.7.0"
-androidx-lifecycle = "2.10.0"
+androidx-lifecycle = "2.11.0"
 androidx-testExt = "1.3.0"
-composeHotReload = "1.1.1"
-compose-multiplatform = "1.11.1"
+composeHotReload = "1.2.0"
+composeMultiplatform = "1.12.0"
 junit = "4.13.2"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
-ktor = "3.5.0"
-logback = "1.5.35"
+ktor = "3.5.2"
+logback = "1.6.3"
 koin = "4.2.2"
 coil3 = "3.5.0"
-ksp = "2.3.9"
+ksp = "2.3.11"
 sqlite = "2.6.2"
 room = "2.8.4"
 koinKtor = "4.2.2"
-exposed = "1.3.0"
+exposed = "1.4.0"
 kotlinxDatetime = "0.8.0-0.6.x-compat"
 kotlinSerialization = "1.11.0"
 navigationCompose = "2.9.2"
-sqliteJdbc = "3.53.2.0"
+sqliteJdbc = "3.53.2.1"
 material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
 coreKtx = "1.18.0"
@@ -56,15 +56,15 @@ androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", nam
 androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 # Compose -----------------------------------------
-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 # Material3
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+compose-materialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 # Koin (DI) ---------------------------------------
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
@@ -87,7 +87,7 @@ coil-compose-core = { module = "io.coil-kt.coil3:coil-compose-core", version.ref
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil3" }
 coil-mp = { module = "io.coil-kt.coil3:coil", version.ref = "coil3" }
 # Back Handler ------------------------------------
-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref= "compose-multiplatform" }
+ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref= "composeMultiplatform" }
 
 # == ComposeApp androidMain ============================
 # Ktor Client - OkHttp
@@ -148,20 +148,17 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 [plugins]
-android-library = { id = "com.android.library", version.ref = "agp" }
-android-application = { id = "com.android.application", version.ref = "agp" }
-
-android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+# Only Android (androidApp)
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+# Basics
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# KMP/CMP
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 compose-hotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
-compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" } # Only Android (androidApp)
-
-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-
-jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 # Ktor
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
