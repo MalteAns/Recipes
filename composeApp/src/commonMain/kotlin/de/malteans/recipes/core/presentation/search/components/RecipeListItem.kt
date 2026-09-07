@@ -8,10 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,20 +42,23 @@ import kotlin.math.roundToInt
 fun RecipeListItem(
     recipe: Recipe,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val apiConfig = koinInject<ApiConfig>() // TODO: There might be a better way
 
-    Surface(
-        shape = RoundedCornerShape(32.dp),
+    Card(
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
         modifier = modifier
+            .clip(MaterialTheme.shapes.extraLarge)
             .combinedClickable (
                 onClick = onClick,
                 onLongClick = onLongClick
-            ),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
-        contentColor = MaterialTheme.colorScheme.onSurface
+            )
     ) {
         Row(
             modifier = Modifier

@@ -179,12 +179,13 @@ fun SearchScreen(
                     state = pagerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
                 ) { pageIndex ->
                     Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp)
                     ) {
                         if (state.isLoading) {
                             CircularProgressIndicator()
@@ -205,12 +206,12 @@ fun SearchScreen(
                                         // Note: onRecipeClick now sends the full Recipe object
                                         RecipesList(
                                             recipes = state.localRecipes,
+                                            scrollState = localRecipesListState,
                                             onRecipeClick = { recipe ->
                                                 onAction(SearchAction.OnRecipeClick(recipe))
                                             },
                                             modifier = Modifier
-                                                .fillMaxSize(),
-                                            scrollState = localRecipesListState
+                                                .fillMaxSize()
                                         )
                                     }
                                 }
@@ -230,12 +231,12 @@ fun SearchScreen(
                                     } else {
                                         RecipesList(
                                             recipes = state.cloudRecipes,
+                                            scrollState = cloudRecipesListState,
                                             onRecipeClick = { recipe ->
                                                 onAction(SearchAction.OnRecipeClick(recipe))
                                             },
                                             modifier = Modifier
-                                                .fillMaxSize(),
-                                            scrollState = cloudRecipesListState
+                                                .fillMaxSize()
                                         )
                                     }
                                 }

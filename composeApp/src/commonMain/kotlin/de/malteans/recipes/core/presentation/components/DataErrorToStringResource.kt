@@ -15,7 +15,7 @@ fun DataError.toUiText(): UiText {
         DataError.Remote.REQUEST_TIMEOUT -> Res.string.error_request_timeout
         DataError.Remote.TOO_MANY_REQUESTS -> Res.string.error_too_many_requests
         DataError.Remote.NO_INTERNET -> Res.string.error_no_internet
-        DataError.Remote.SERVER -> Res.string.error_unknown
+        DataError.Remote.SERVER -> Res.string.server_error
         DataError.Remote.SERIALIZATION -> Res.string.error_serialization
         DataError.Remote.UNKNOWN -> Res.string.error_unknown
     }

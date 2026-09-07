@@ -18,7 +18,7 @@ import de.malteans.recipes.core.domain.Recipe
 fun RecipesList(
     recipes: List<Recipe>,
     onRecipeClick: (Recipe) -> Unit,
-    onRecipeLongClick: (Recipe) -> Unit = {},
+    onRecipeLongClick: ((Recipe) -> Unit)? = null,
     modifier: Modifier = Modifier,
     scrollState: LazyListState = rememberLazyListState()
 ) {
@@ -50,7 +50,7 @@ fun RecipesList(
                     recipe = recipe,
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onRecipeClick(recipe) },
-                    onLongClick = { onRecipeLongClick(recipe) }
+                    onLongClick = onRecipeLongClick?.let { { onRecipeLongClick(recipe) } }
                 )
 //            }
         }
